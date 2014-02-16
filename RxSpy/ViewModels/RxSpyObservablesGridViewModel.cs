@@ -11,12 +11,11 @@ namespace RxSpy.ViewModels
 {
     public class RxSpyObservablesGridViewModel : ReactiveObject
     {
-        private RxSpySessionModel _model;
-
-        readonly ObservableAsPropertyHelper<IReactiveDerivedList<RxSpyObservableGridItemViewModel>> _observables;
+        IReactiveDerivedList<RxSpyObservableGridItemViewModel> _observables;
         public IReactiveDerivedList<RxSpyObservableGridItemViewModel> Observables
         {
-            get { return _observables.Value; }
+            get { return _observables; }
+            set { this.RaiseAndSetIfChanged(ref _observables, value); }
         }
 
         RxSpyObservableGridItemViewModel _selectedItem;
@@ -26,14 +25,9 @@ namespace RxSpy.ViewModels
             set { this.RaiseAndSetIfChanged(ref _selectedItem, value); }
         }
 
-        public RxSpyObservablesGridViewModel(RxSpySessionModel model)
+        public RxSpyObservablesGridViewModel(IReadOnlyReactiveList<RxSpyObservableModel> model)
         {
-            _model = model;
-
-            this.WhenAnyValue(x => x._model.TrackedObservables)
-                .Select(x => x.CreateDerivedCollection(m => new RxSpyObservableGridItemViewModel(m)))
-                .Scan((cur, prev) => { using (prev) return cur; })
-                .ToProperty(this, x => x.Observables, out _observables);
+            Observables = model.CreateDerivedCollection(x => new RxSpyObservableGridItemViewModel(x));
         }
     }
 }

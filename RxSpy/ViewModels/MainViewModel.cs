@@ -45,7 +45,7 @@ namespace RxSpy.ViewModels
             this.WhenAnyValue(x => x.Model.TrackedObservables)
                 .ToProperty(this, x => x.TrackedObservables, out _trackedObservables);
 
-            GridViewModel = new RxSpyObservablesGridViewModel(model);
+            GridViewModel = new RxSpyObservablesGridViewModel(model.TrackedObservables);
 
             this.WhenAnyValue(x => x.GridViewModel.SelectedItem)
                 .Select(x => x == null ? null : x.Model)

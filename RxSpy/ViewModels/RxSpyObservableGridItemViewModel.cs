@@ -14,6 +14,12 @@ namespace RxSpy.ViewModels
     {
         public RxSpyObservableModel Model { get; private set; }
 
+        readonly ObservableAsPropertyHelper<long> _id;
+        public long Id
+        {
+            get { return _id.Value; }
+        }
+
         readonly ObservableAsPropertyHelper<string> _name;
         public string Name
         {
@@ -65,6 +71,9 @@ namespace RxSpy.ViewModels
         public RxSpyObservableGridItemViewModel(RxSpyObservableModel model)
         {
             Model = model;
+
+            this.WhenAnyValue(x => x.Model.Id)
+                .ToProperty(this, x => x.Id, out _id);
 
             this.WhenAnyValue(x => x.Model.Name)
                 .ToProperty(this, x => x.Name, out _name);

@@ -3,15 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:rx="clr-namespace:ReactiveUI.Xaml;assembly=ReactiveUI.Xaml" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
-        <DataGrid x:Name="observableValuesGrid" AutoGenerateColumns="False" SelectionMode="Single" CanUserDeleteRows="False" SelectionUnit="FullRow">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Received" Binding="{Binding Received}" />
-                <DataGridTextColumn Header="Type" Binding="{Binding ValueType}" />
-                <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+    <TabControl>
+        <TabItem Header="Signals">
+            <DataGrid x:Name="observableValuesGrid" AutoGenerateColumns="False" SelectionMode="Single" CanUserDeleteRows="False" CanUserReorderColumns="False" AreRowDetailsFrozen="True" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Received" Binding="{Binding Received}" />
+                    <DataGridTextColumn Header="Type" Binding="{Binding ValueType}" />
+                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </TabItem>
+        <TabItem Header="Parents">
+            <rx:ViewModelViewHost x:Name="parentsView" />
+        </TabItem>
+        <TabItem Header="Children">
+            <rx:ViewModelViewHost x:Name="childrenView" />
+        </TabItem>
+    </TabControl>
 </UserControl>

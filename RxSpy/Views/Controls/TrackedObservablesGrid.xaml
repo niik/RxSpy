@@ -7,19 +7,20 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="500">
     <Grid>
-        <DataGrid x:Name="observablesGrid" AutoGenerateColumns="False" SelectionMode="Single" CanUserDeleteRows="False" SelectionUnit="FullRow">
+        <DataGrid x:Name="observablesGrid" AutoGenerateColumns="False" SelectionMode="Single" CanUserDeleteRows="False" SelectionUnit="FullRow" CanUserReorderColumns="False" AreRowDetailsFrozen="True" IsReadOnly="True">
             <DataGrid.ItemsSource>
                 <x:Array Type="viewModels:RxSpyObservableGridItemViewModel">
                 </x:Array>
             </DataGrid.ItemsSource>
             <DataGrid.Columns>
+                <DataGridTextColumn Header="#" Binding="{Binding Id}" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Parents" Binding="{Binding Path=Parents, StringFormat=N0}" SortMemberPath="Parents" />
                 <DataGridTextColumn Header="Children" Binding="{Binding Path=Children, StringFormat=N0}" SortMemberPath="Children" />
                 <DataGridTextColumn Header="Ancestors" Binding="{Binding Path=Ancestors, StringFormat=N0}" SortMemberPath="Ancestors" />
                 <DataGridTextColumn Header="Descendants" Binding="{Binding Path=Descendants, StringFormat=N0}" SortMemberPath="Descendants" />
                 <DataGridTextColumn Header="Values" Binding="{Binding Path=ValuesProduced, StringFormat=N0}" SortMemberPath="ValuesProduced" />
-                <DataGridTextColumn Header="Created in" Binding="{Binding Path=CallSite}" />
+                <DataGridTextColumn Header="Created in" Binding="{Binding Path=CallSite}" Width="*" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
