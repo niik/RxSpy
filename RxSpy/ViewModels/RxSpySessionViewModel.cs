@@ -18,12 +18,6 @@ namespace RxSpy.ViewModels
             get { return _trackedObservables.Value; }
         }
 
-        readonly ObservableAsPropertyHelper<IReadOnlyReactiveList<RxSpyObservableModel>> _activeTrackedObservables;
-        public IReadOnlyReactiveList<RxSpyObservableModel> ActiveTrackedObservables
-        {
-            get { return _activeTrackedObservables.Value; }
-        }
-
         RxSpyObservablesGridViewModel _gridViewModel;
         public RxSpyObservablesGridViewModel GridViewModel
         {
@@ -37,9 +31,6 @@ namespace RxSpy.ViewModels
 
             this.WhenAnyValue(x => x.Model.TrackedObservables)
                 .ToProperty(this, x => x.TrackedObservables, out _trackedObservables);
-
-            this.WhenAnyValue(x => x.Model.ActiveTrackedObservables)
-                .ToProperty(this, x => x.ActiveTrackedObservables, out _activeTrackedObservables);
 
             GridViewModel = new RxSpyObservablesGridViewModel(model);
         }

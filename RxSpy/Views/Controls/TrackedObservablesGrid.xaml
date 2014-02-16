@@ -14,9 +14,11 @@
             </DataGrid.ItemsSource>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                <DataGridTextColumn Header="Active subs" Binding="{Binding Path=ActiveSubscriptions, StringFormat=N0}" />
-                <DataGridTextColumn Header="Total subs" Binding="{Binding Path=TotalSubscriptions, StringFormat=N0}" />
-                <DataGridTextColumn Header="Values" Binding="{Binding Path=ValuesProduced, StringFormat=N0}" />
+                <DataGridTextColumn Header="Parents" Binding="{Binding Path=Parents, StringFormat=N0}" SortMemberPath="Parents" />
+                <DataGridTextColumn Header="Children" Binding="{Binding Path=Children, StringFormat=N0}" SortMemberPath="Children" />
+                <DataGridTextColumn Header="Ancestors" Binding="{Binding Path=Ancestors, StringFormat=N0}" SortMemberPath="Ancestors" />
+                <DataGridTextColumn Header="Descendants" Binding="{Binding Path=Descendants, StringFormat=N0}" SortMemberPath="Descendants" />
+                <DataGridTextColumn Header="Values" Binding="{Binding Path=ValuesProduced, StringFormat=N0}" SortMemberPath="ValuesProduced" />
                 <DataGridTextColumn Header="Created at" Binding="{Binding Path=CallSite}" />
             </DataGrid.Columns>
         </DataGrid>

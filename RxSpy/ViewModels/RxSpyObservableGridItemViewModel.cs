@@ -26,10 +26,28 @@ namespace RxSpy.ViewModels
             get { return _valuesProduced.Value; }
         }
 
-        readonly ObservableAsPropertyHelper<int> _activeSubscriptions;
-        public int ActiveSubscriptions
+        readonly ObservableAsPropertyHelper<int> _parents;
+        public int Parents
         {
-            get { return _activeSubscriptions.Value; }
+            get { return _parents.Value; }
+        }
+
+        readonly ObservableAsPropertyHelper<int> _children;
+        public int Children
+        {
+            get { return _children.Value; }
+        }
+
+        readonly ObservableAsPropertyHelper<int> _ancestors;
+        public int Ancestors
+        {
+            get { return _ancestors.Value; }
+        }
+
+        readonly ObservableAsPropertyHelper<int> _descendants;
+        public int Descendants
+        {
+            get { return _descendants.Value; }
         }
 
         readonly ObservableAsPropertyHelper<int> _totalSubscriptions;
@@ -54,11 +72,20 @@ namespace RxSpy.ViewModels
             this.WhenAnyValue(x => x._model.ValuesProduced)
                 .ToProperty(this, x => x.ValuesProduced, out _valuesProduced);
 
-            this.WhenAnyValue(x => x._model.Subscriptions.Count)
+            this.WhenAnyValue(x => x._model.Children.Count)
                 .ToProperty(this, x => x.TotalSubscriptions, out _totalSubscriptions);
 
-            this.WhenAnyValue(x => x._model.ActiveSubscriptions.Count)
-                .ToProperty(this, x => x.ActiveSubscriptions, out _activeSubscriptions);
+            this.WhenAnyValue(x => x._model.Parents.Count)
+                .ToProperty(this, x => x.Parents, out _parents);
+
+            this.WhenAnyValue(x => x._model.Children.Count)
+                .ToProperty(this, x => x.Children, out _children);
+
+            this.WhenAnyValue(x => x._model.Ancestors)
+                .ToProperty(this, x => x.Ancestors, out _ancestors);
+
+            this.WhenAnyValue(x => x._model.Descendants)
+                .ToProperty(this, x => x.Descendants, out _descendants);
 
             this.WhenAnyValue(x => x._model.CallSite, x => GetCallSiteString(x))
                 .ToProperty(this, x => x.CallSite, out _callSite);

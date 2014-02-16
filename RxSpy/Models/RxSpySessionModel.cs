@@ -15,12 +15,10 @@ namespace RxSpy.Models
             = new ConcurrentDictionary<long, RxSpySubscriptionModel>();
 
         public ReactiveList<RxSpyObservableModel> TrackedObservables { get; set; }
-        public IReadOnlyReactiveList<RxSpyObservableModel> ActiveTrackedObservables { get; set; }
 
         public RxSpySessionModel()
         {
             TrackedObservables = new ReactiveList<RxSpyObservableModel>();
-            ActiveTrackedObservables = TrackedObservables.CreateDerivedCollection(x => x, x => x.HasSubscribers);
         }
 
         internal void OnEvent(IEvent ev)
@@ -74,7 +72,24 @@ namespace RxSpy.Models
             };
 
             subscriptionRepository.TryAdd(subscribeEvent.EventId, subscriptionModel);
+            
             parent.Subscriptions.Add(subscriptionModel);
+            
+            parent.Children.Add(child);
+            parent.Descendants++;
+
+            child.Parents.Add(parent);
+            child.Ancestors += 1 + parent.Ancestors;
+
+            AddDescendants(parent, child.Descendants);
+        }
+
+        void AddDescendants(RxSpyObservableModel current, int count)
+        {
+            current.Descendants += count;
+
+            foreach (var parent in current.Parents)
+                AddDescendants(parent, count);
         }
 
         void OnUnsubscribe(IUnsubscribeEvent unsubscribeEvent)

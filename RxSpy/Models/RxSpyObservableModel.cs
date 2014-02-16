@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using ReactiveUI;
 using RxSpy.Events;
@@ -18,18 +19,25 @@ namespace RxSpy.Models
 
         public TimeSpan Created { get; private set; }
 
+        ReactiveList<RxSpyObservableModel> _parents;
+        public ReactiveList<RxSpyObservableModel> Parents
+        {
+            get { return _parents; }
+            private set { this.RaiseAndSetIfChanged(ref _parents, value); }
+        }
+
+        ReactiveList<RxSpyObservableModel> _children;
+        public ReactiveList<RxSpyObservableModel> Children
+        {
+            get { return _children; }
+            private set { this.RaiseAndSetIfChanged(ref _children, value); }
+        }
+
         ReactiveList<RxSpySubscriptionModel> _subscriptions;
         public ReactiveList<RxSpySubscriptionModel> Subscriptions
         {
             get { return _subscriptions; }
             private set { this.RaiseAndSetIfChanged(ref _subscriptions, value); }
-        }
-
-        IReactiveDerivedList<RxSpySubscriptionModel> _activeSubscriptions;
-        public IReactiveDerivedList<RxSpySubscriptionModel> ActiveSubscriptions
-        {
-            get { return _activeSubscriptions; }
-            private set { this.RaiseAndSetIfChanged(ref _activeSubscriptions, value); }
         }
 
         ReactiveList<RxSpyObservedValueModel> _observedValues;
@@ -38,13 +46,6 @@ namespace RxSpy.Models
             get { return _observedValues; }
             private set { this.RaiseAndSetIfChanged(ref _observedValues, value); }
         }
-
-        readonly ObservableAsPropertyHelper<bool> _hasSubscribers;
-        public bool HasSubscribers
-        {
-            get { return _hasSubscribers.Value; }
-        }
-
         RxSpyErrorModel _error;
         public RxSpyErrorModel Error
         {
@@ -66,6 +67,20 @@ namespace RxSpy.Models
             set { this.RaiseAndSetIfChanged(ref _valuesProduced, value); }
         }
 
+        int _descendants;
+        public int Descendants
+        {
+            get { return _descendants; }
+            set { this.RaiseAndSetIfChanged(ref _descendants, value); }
+        }
+
+        int _ancestors;
+        public int Ancestors
+        {
+            get { return _ancestors; }
+            set { this.RaiseAndSetIfChanged(ref _ancestors, value); }
+        }
+
         public RxSpyObservableModel(IOperatorCreatedEvent createdEvent)
         {
             Id = createdEvent.Id;
@@ -77,11 +92,10 @@ namespace RxSpy.Models
             Created = TimeSpan.FromMilliseconds(createdEvent.EventTime);
 
             Subscriptions = new ReactiveList<RxSpySubscriptionModel>();
-            ActiveSubscriptions = Subscriptions.CreateDerivedCollection(x => x, filter: x => x.IsActive);
-            ObservedValues = new ReactiveList<RxSpyObservedValueModel>();
+            Parents = new ReactiveList<RxSpyObservableModel>();
+            Children = new ReactiveList<RxSpyObservableModel>();
 
-            this.WhenAnyValue(x => x.Subscriptions.Count, x => x > 0)
-                .ToProperty(this, x => x.HasSubscribers, out _hasSubscribers);
+            ObservedValues = new ReactiveList<RxSpyObservedValueModel>();
         }
 
         public void OnNext(IOnNextEvent onNextEvent)
