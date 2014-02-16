@@ -66,9 +66,11 @@
     <Compile Include="Events\OnNextEvent.cs" />
     <Compile Include="Events\OperatorCreatedEvent.cs" />
     <Compile Include="Events\CallSite.cs" />
+    <Compile Include="Events\TagOperatorEvent.cs" />
     <Compile Include="Events\SubscribeEvent.cs" />
     <Compile Include="Events\TypeInfo.cs" />
     <Compile Include="Events\UnsubscribeEvent.cs" />
+    <Compile Include="Extensions\SpyObservableExtensions.cs" />
     <Compile Include="Observables\IOperatorObservable.cs" />
     <Compile Include="Observables\MITMObservable.cs" />
     <Compile Include="Observables\OperatorConnection.cs" />

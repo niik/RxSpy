@@ -17,6 +17,13 @@ namespace RxSpy.Models
         public IMethodInfo OperatorMethod { get; private set; }
         public ICallSite CallSite { get; private set; }
 
+        string _tag;
+        public string Tag
+        {
+            get { return _tag; }
+            set { this.RaiseAndSetIfChanged(ref _tag, value); }
+        }
+
         public TimeSpan Created { get; private set; }
 
         ReactiveList<RxSpyObservableModel> _parents;
@@ -113,6 +120,11 @@ namespace RxSpy.Models
         {
             Error = new RxSpyErrorModel(onErrorEvent);
             IsActive = false;
+        }
+
+        public void OnTag(ITagOperatorEvent onTagEvent)
+        {
+            Tag = onTagEvent.Tag;
         }
     }
 }

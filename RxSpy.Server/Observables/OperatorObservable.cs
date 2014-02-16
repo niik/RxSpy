@@ -8,7 +8,7 @@ namespace RxSpy.Observables
     internal class OperatorObservable<T> : MITMObservable<T>, IOperatorObservable
     {
         readonly OperatorInfo _operatorInfo;
-        private RxSpySession _session;
+        readonly RxSpySession _session;
 
         public OperatorInfo OperatorInfo { get { return _operatorInfo; } }
 
@@ -65,6 +65,11 @@ namespace RxSpy.Observables
         public override string ToString()
         {
             return _operatorInfo.ToString();
+        }
+
+        internal void Tag(string tag)
+        {
+            _session.EnqueueEvent(Event.Tag(_operatorInfo, tag));
         }
     }
 }

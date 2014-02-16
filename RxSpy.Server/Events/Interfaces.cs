@@ -73,4 +73,9 @@ namespace RxSpy.Events
         long SubscriptionId { get; }
     }
 
+    public interface ITagOperatorEvent : IEvent
+    {
+        string Tag { get; }
+        long OperatorId { get; }
+    }
 }

@@ -98,6 +98,7 @@
     <Compile Include="Models\Events\OnNextEvent.cs" />
     <Compile Include="Models\Events\OperatorCreatedEvent.cs" />
     <Compile Include="Models\Events\SubscribeEvent.cs" />
+    <Compile Include="Models\Events\TagOperatorEvent.cs" />
     <Compile Include="Models\Events\TypeInfo.cs" />
     <Compile Include="Models\Events\UnsubscribeEvent.cs" />
     <Compile Include="Models\RxSpyErrorModel.cs" />

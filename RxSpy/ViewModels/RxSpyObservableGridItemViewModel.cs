@@ -26,6 +26,12 @@ namespace RxSpy.ViewModels
             get { return _name.Value; }
         }
 
+        readonly ObservableAsPropertyHelper<string> _tag;
+        public string Tag
+        {
+            get { return _tag.Value; }
+        }
+
         readonly ObservableAsPropertyHelper<long> _valuesProduced;
         public long ValuesProduced
         {
@@ -77,6 +83,9 @@ namespace RxSpy.ViewModels
 
             this.WhenAnyValue(x => x.Model.Name)
                 .ToProperty(this, x => x.Name, out _name);
+
+            this.WhenAnyValue(x => x.Model.Tag)
+                .ToProperty(this, x => x.Tag, out _tag);
 
             this.WhenAnyValue(x => x.Model.ValuesProduced)
                 .ToProperty(this, x => x.ValuesProduced, out _valuesProduced);

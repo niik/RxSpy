@@ -20,6 +20,7 @@
                 <DataGridTextColumn Header="Ancestors" Binding="{Binding Path=Ancestors, StringFormat=N0}" SortMemberPath="Ancestors" />
                 <DataGridTextColumn Header="Descendants" Binding="{Binding Path=Descendants, StringFormat=N0}" SortMemberPath="Descendants" />
                 <DataGridTextColumn Header="Values" Binding="{Binding Path=ValuesProduced, StringFormat=N0}" SortMemberPath="ValuesProduced" />
+                <DataGridTextColumn Header="Tag" Binding="{Binding Path=Tag}" />
                 <DataGridTextColumn Header="Created in" Binding="{Binding Path=CallSite}" Width="*" />
             </DataGrid.Columns>
         </DataGrid>

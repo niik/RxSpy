@@ -48,6 +48,10 @@ namespace RxSpy.Models
                 case EventType.OnError:
                     OnError((IOnErrorEvent)ev);
                     break;
+
+                case EventType.TagOperator:
+                    OnTag((ITagOperatorEvent)ev);
+                    break;
             }
         }
 
@@ -131,5 +135,15 @@ namespace RxSpy.Models
             }
         }
 
+        private void OnTag(ITagOperatorEvent tagOperatorEvent)
+        {
+            RxSpyObservableModel operatorModel;
+            observableRepository.TryGetValue(tagOperatorEvent.OperatorId, out operatorModel);
+
+            if (operatorModel != null)
+            {
+                operatorModel.OnTag(tagOperatorEvent);
+            }
+        }
     }
 }

@@ -57,5 +57,10 @@ namespace RxSpy.Events
         {
             return new UnsubscribeEvent(subscriptionId);
         }
+
+        internal static Event Tag(OperatorInfo operatorInfo, string tag)
+        {
+            return new TagOperatorEvent(operatorInfo, tag);
+        }
     }
 }

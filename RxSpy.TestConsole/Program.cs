@@ -19,7 +19,7 @@ namespace RxSpy.TestConsole
             {
                 var obs1 = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1));
                 var obs2 = obs1.Select(x => dummy[x % dummy.Length]);
-                var obs3 = obs1.Select(x => "---");
+                var obs3 = obs1.Select(x => "---").SpyTag("Fofofofof");
 
                 var obs4 = obs2.Where(x => x.StartsWith("B"));
 
