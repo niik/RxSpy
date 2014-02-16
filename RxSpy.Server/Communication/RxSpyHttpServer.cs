@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -95,7 +96,7 @@ namespace RxSpy.Communication
 
         async Task RunStream(HttpListenerContext ctx, CancellationToken ct)
         {
-            ctx.Response.ContentType = "text/plain";
+            ctx.Response.ContentType = "application/json; charset=utf-8";
             ctx.Response.SendChunked = true;
 
             try
@@ -103,7 +104,7 @@ namespace RxSpy.Communication
                 _hasConnection = true;
                 _connnectionSignal.Set();
 
-                using (var sw = new StreamWriter(ctx.Response.OutputStream))
+                using (var sw = new StreamWriter(ctx.Response.OutputStream, Encoding.UTF8))
                 {
                     sw.AutoFlush = true;
 
