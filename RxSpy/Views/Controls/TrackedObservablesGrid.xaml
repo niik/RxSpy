@@ -5,9 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:viewModels="clr-namespace:RxSpy.ViewModels" 
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="500">
     <Grid>
-        <DataGrid x:Name="observablesGrid" Margin="0,0,-13,0" AutoGenerateColumns="False">
+        <DataGrid x:Name="observablesGrid" AutoGenerateColumns="False">
             <DataGrid.ItemsSource>
                 <x:Array Type="viewModels:RxSpyObservableGridItemViewModel">
                 </x:Array>
@@ -19,7 +19,7 @@
                 <DataGridTextColumn Header="Ancestors" Binding="{Binding Path=Ancestors, StringFormat=N0}" SortMemberPath="Ancestors" />
                 <DataGridTextColumn Header="Descendants" Binding="{Binding Path=Descendants, StringFormat=N0}" SortMemberPath="Descendants" />
                 <DataGridTextColumn Header="Values" Binding="{Binding Path=ValuesProduced, StringFormat=N0}" SortMemberPath="ValuesProduced" />
-                <DataGridTextColumn Header="Created at" Binding="{Binding Path=CallSite}" />
+                <DataGridTextColumn Header="Created in" Binding="{Binding Path=CallSite}" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
