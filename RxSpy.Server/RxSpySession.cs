@@ -19,6 +19,8 @@ namespace RxSpy
         readonly IRxSpyServer _server;
         readonly WeakObserverCache _cache = new WeakObserverCache();
 
+        internal static RxSpySession Current { get; private set; }
+
         RxSpySession(IRxSpyServer server)
         {
             _server = server;
@@ -50,6 +52,7 @@ namespace RxSpy
 
             server.WaitForConnection(timeout);
             var session = new RxSpySession(server);
+            Current = session;
 
             if (Interlocked.CompareExchange(ref _launched, 1, 0) != 0)
                 throw new InvalidOperationException("Session already created");
