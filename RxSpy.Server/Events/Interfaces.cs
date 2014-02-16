@@ -29,6 +29,12 @@ namespace RxSpy.Events
         string Signature { get; }
     }
 
+    public interface ITypeInfo
+    {
+        string Name { get; }
+        string Namespace { get; }
+    }
+
     public interface IOperatorCreatedEvent : IEvent
     {
         long Id { get; }
@@ -46,7 +52,7 @@ namespace RxSpy.Events
 
     public interface IOnErrorEvent : IEvent
     {
-        Type ErrorType { get; }
+        ITypeInfo ErrorType { get; }
         string Message { get; }
         long OperatorId { get; }
     }
@@ -66,4 +72,5 @@ namespace RxSpy.Events
     {
         long SubscriptionId { get; }
     }
+
 }

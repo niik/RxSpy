@@ -7,8 +7,8 @@ using RxSpy.Events;
 
 namespace RxSpy.Models.Events
 {
-    public class UnsubscribeEvent: Event, IUnsubscribeEvent
+    public class OnCompletedEvent: Event, IOnCompletedEvent
     {
-        public long SubscriptionId { get; set; }
+        public long OperatorId { get; set; }
     }
 }

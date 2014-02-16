@@ -7,11 +7,9 @@ using RxSpy.Events;
 
 namespace RxSpy.Models.Events
 {
-    public class MethodInfo: IMethodInfo
+    public class TypeInfo: ITypeInfo
     {
-        public string DeclaringType { get; set; }
         public string Name { get; set; }
         public string Namespace { get; set; }
-        public string Signature { get; set; }
     }
 }

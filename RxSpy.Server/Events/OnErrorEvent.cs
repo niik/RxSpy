@@ -7,7 +7,7 @@ namespace RxSpy.Events
 {
     internal class OnErrorEvent: Event, IOnErrorEvent
     {
-        public Type ErrorType { get; private set; }
+        public ITypeInfo ErrorType { get; private set; }
         public string Message { get; private set; }
         public long OperatorId { get; private set; }
 
@@ -18,7 +18,7 @@ namespace RxSpy.Events
                 return;
 
             OperatorId = operatorInfo.Id;
-            ErrorType = error.GetType();
+            ErrorType = new TypeInfo(error.GetType());
             Message = error.Message;
         }
 

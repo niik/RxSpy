@@ -22,12 +22,6 @@ namespace RxSpy.Communication.Serialization
             if (obj == null)
                 return base.DeserializeObject(value, type);
 
-            if (type == typeof(ICallSite))
-                return base.DeserializeObject(value, typeof(CallSite));
-
-            if (type == typeof(IMethodInfo))
-                return base.DeserializeObject(value, typeof(MethodInfo));
-
             if (type == typeof(IEvent))
             {
                 var eventType = (EventType)DeserializeObject(obj["EventType"], typeof(EventType));
@@ -41,6 +35,15 @@ namespace RxSpy.Communication.Serialization
                     default: return null;
                 }
             }
+
+            if (type == typeof(ICallSite))
+                return base.DeserializeObject(value, typeof(CallSite));
+
+            if (type == typeof(IMethodInfo))
+                return base.DeserializeObject(value, typeof(MethodInfo));
+
+            if (type == typeof(ITypeInfo))
+                return base.DeserializeObject(value, typeof(TypeInfo));
 
             return base.DeserializeObject(value, type);
         }

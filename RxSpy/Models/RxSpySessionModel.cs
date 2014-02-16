@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using ReactiveUI;
 using RxSpy.Events;
 
@@ -19,7 +20,7 @@ namespace RxSpy.Models
         public RxSpySessionModel()
         {
             TrackedObservables = new ReactiveList<RxSpyObservableModel>();
-            ActiveTrackedObservables = TrackedObservables.CreateDerivedCollection(x => x, x => x.IsActive);
+            ActiveTrackedObservables = TrackedObservables.CreateDerivedCollection(x => x, x => x.HasSubscribers);
         }
 
         internal void OnEvent(IEvent ev)
@@ -31,11 +32,23 @@ namespace RxSpy.Models
                     break;
 
                 case EventType.Subscribe:
-                    OnSubscription((ISubscribeEvent)ev);
+                    OnSubscribe((ISubscribeEvent)ev);
                     break;
 
                 case EventType.Unsubscribe:
-                    OnUnsubscription((IUnsubscribeEvent)ev);
+                    OnUnsubscribe((IUnsubscribeEvent)ev);
+                    break;
+
+                case EventType.OnCompleted:
+                    OnCompleted((IOnCompletedEvent)ev);
+                    break;
+
+                case EventType.OnNext:
+                    OnNext((IOnNextEvent)ev);
+                    break;
+
+                case EventType.OnError:
+                    OnError((IOnErrorEvent)ev);
                     break;
             }
         }
@@ -48,14 +61,15 @@ namespace RxSpy.Models
             TrackedObservables.Add(operatorModel);
         }
 
-        private void OnSubscription(ISubscribeEvent subscribeEvent)
+        void OnSubscribe(ISubscribeEvent subscribeEvent)
         {
             RxSpyObservableModel child, parent;
 
             observableRepository.TryGetValue(subscribeEvent.ChildId, out child);
             observableRepository.TryGetValue(subscribeEvent.ParentId, out parent);
 
-            var subscriptionModel = new RxSpySubscriptionModel(subscribeEvent.EventId, child, parent) {
+            var subscriptionModel = new RxSpySubscriptionModel(subscribeEvent, child, parent)
+            {
                 IsActive = true
             };
 
@@ -63,7 +77,7 @@ namespace RxSpy.Models
             parent.Subscriptions.Add(subscriptionModel);
         }
 
-        private void OnUnsubscription(IUnsubscribeEvent unsubscribeEvent)
+        void OnUnsubscribe(IUnsubscribeEvent unsubscribeEvent)
         {
             RxSpySubscriptionModel subscriptionModel;
 
@@ -74,5 +88,34 @@ namespace RxSpy.Models
                 subscriptionModel.IsActive = false;
             }
         }
+
+        private void OnError(IOnErrorEvent onErrorEvent)
+        {
+            RxSpyObservableModel operatorModel;
+            observableRepository.TryGetValue(onErrorEvent.OperatorId, out operatorModel);
+
+            operatorModel.Error = new RxSpyError(onErrorEvent);
+            operatorModel.IsActive = false;
+        }
+
+        private void OnNext(IOnNextEvent onNextEvent)
+        {
+            RxSpyObservableModel operatorModel;
+            observableRepository.TryGetValue(onNextEvent.OperatorId, out operatorModel);
+
+            operatorModel.ObservedValues.Add(new RxSpyObservedValue(onNextEvent));
+        }
+
+        void OnCompleted(IOnCompletedEvent onCompletedEvent)
+        {
+            RxSpyObservableModel operatorModel;
+            observableRepository.TryGetValue(onCompletedEvent.OperatorId, out operatorModel);
+
+            if (operatorModel != null)
+            {
+                operatorModel.IsActive = false;
+            }
+        }
+
     }
 }

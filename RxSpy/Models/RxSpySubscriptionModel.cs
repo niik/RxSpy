@@ -33,12 +33,16 @@ namespace RxSpy.Models
             set { this.RaiseAndSetIfChanged(ref _isActive, value); }
         }
 
-        public RxSpySubscriptionModel(long subscriptionId, RxSpyObservableModel child, RxSpyObservableModel parent)
+        public TimeSpan Created { get; set; }
+
+        public RxSpySubscriptionModel(ISubscribeEvent subscribeEvent, RxSpyObservableModel child, RxSpyObservableModel parent)
         {
-            SubscriptionId = subscriptionId;
+            SubscriptionId = subscribeEvent.EventId;
             Parent = parent;
             Child = child;
             IsActive = true;
+            Created = TimeSpan.FromMilliseconds(subscribeEvent.EventTime);
         }
+
     }
 }

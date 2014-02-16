@@ -15,7 +15,7 @@ namespace RxSpy.AppStartup
         public static void Start()
         {
             var args = Environment.GetCommandLineArgs();
-            var address = new Uri("http://localhost:62534/rxspy/");
+            var address = new Uri("http://localhost:63698/rxspy/");
 
             var client = new RxSpyHttpClient();
 

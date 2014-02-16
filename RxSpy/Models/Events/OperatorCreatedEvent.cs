@@ -13,9 +13,5 @@ namespace RxSpy.Models.Events
         public string Name { get; set; }
         public ICallSite CallSite { get; set; }
         public IMethodInfo OperatorMethod { get; set; }
-
-        public OperatorCreatedEvent()
-        {
-        }
     }
 }

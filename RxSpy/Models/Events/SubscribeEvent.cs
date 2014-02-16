@@ -11,9 +11,5 @@ namespace RxSpy.Models.Events
     {
         public long ChildId { get; set; }
         public long ParentId { get; set; }
-
-        public SubscribeEvent()
-        {
-        }
     }
 }

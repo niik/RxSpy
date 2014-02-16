@@ -13,9 +13,5 @@ namespace RxSpy.Models.Events
         public int ILOffset { get; set; }
         public int Line { get; set; }
         public IMethodInfo Method { get; set; }
-
-        public CallSite()
-        {
-        }
     }
 }
