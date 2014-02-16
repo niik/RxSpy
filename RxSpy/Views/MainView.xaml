@@ -7,16 +7,20 @@
              xmlns:ctl="clr-namespace:RxSpy.Views.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="600">
-    <Grid>
+    <Grid Margin="5">
         
         <Grid.RowDefinitions>
-            <RowDefinition Height="70*" />
-            <RowDefinition Height="30*" />
+            <RowDefinition />
+            <RowDefinition/>
         </Grid.RowDefinitions>
         
-        <rx:ViewModelViewHost x:Name="observablesGrid" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        <GroupBox Header="Tracked observables" Margin="10">
+            <rx:ViewModelViewHost x:Name="observablesGrid" Margin="10" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        </GroupBox>
 
-        <rx:ViewModelViewHost Grid.Row="2" x:Name="detailsView" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  />
+        <GroupBox Header="Details" Margin="10" Grid.Row="2" >
+            <rx:ViewModelViewHost Margin="10" x:Name="detailsView" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  />
+        </GroupBox>
 
     </Grid>
 </UserControl>
