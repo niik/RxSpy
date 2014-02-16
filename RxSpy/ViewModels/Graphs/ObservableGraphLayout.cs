@@ -8,7 +8,7 @@ using RxSpy.Models;
 
 namespace RxSpy.ViewModels.Graphs
 {
-    public class ObservableGraphLayout: GraphLayout<RxSpyObservableModel, ObserveableEdge, ObservableGraph>
+    public class ObservableGraphLayout: GraphLayout<ObservableVertex, ObserveableEdge, ObservableGraph>
     {
     }
 }

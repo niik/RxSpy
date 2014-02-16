@@ -28,5 +28,11 @@ namespace RxSpy
 
             viewHost.ViewModel = RxApp.DependencyResolver.GetService<MainViewModel>();
         }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            Application.Current.Shutdown();
+        }
     }
 }

@@ -22,27 +22,32 @@ namespace RxSpy.ViewModels
         {
             Graph = new ObservableGraph();
 
-            Graph.AddVertex(model);
+            var vertex = new ObservableVertex(model);
+            Graph.AddVertex(vertex);
 
-            AddAncestors(model);
-            AddDescendants(model);
+            AddAncestors(vertex);
+            AddDescendants(vertex);
         }
 
-        private void AddDescendants(RxSpyObservableModel model)
+        private void AddDescendants(ObservableVertex vertex)
         {
-            foreach (var child in model.Children)
+            foreach (var child in vertex.Model.Children)
             {
-                Graph.AddVerticesAndEdge(new ObserveableEdge(model, child));
-                AddDescendants(child);
+                var childVertex = new ObservableVertex(child);
+
+                Graph.AddVerticesAndEdge(new ObserveableEdge(vertex, childVertex));
+                AddDescendants(childVertex);
             }
         }
 
-        void AddAncestors(RxSpyObservableModel model)
+        void AddAncestors(ObservableVertex vertex)
         {
-            foreach (var parent in model.Parents)
+            foreach (var parent in vertex.Model.Parents)
             {
-                Graph.AddVerticesAndEdge(new ObserveableEdge(parent, model));
-                AddAncestors(parent);
+                var parentVertex = new ObservableVertex(parent);
+
+                Graph.AddVerticesAndEdge(new ObserveableEdge(parentVertex, vertex));
+                AddAncestors(parentVertex);
             }
         }
     }

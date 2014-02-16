@@ -9,7 +9,7 @@ using RxSpy.Models;
 
 namespace RxSpy.ViewModels.Graphs
 {
-    public class ObservableGraph : BidirectionalGraph<RxSpyObservableModel, ObserveableEdge>
+    public class ObservableGraph : BidirectionalGraph<ObservableVertex, ObserveableEdge>
     {
     }
 }
