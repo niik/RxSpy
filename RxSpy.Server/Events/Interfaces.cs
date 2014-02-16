@@ -8,7 +8,7 @@ namespace RxSpy.Events
 {
     public interface IEvent
     {
-        EventType Type { get; }
+        EventType EventType { get; }
         long EventId { get; }
         long EventTime { get; }
     }
@@ -54,5 +54,16 @@ namespace RxSpy.Events
     public interface IOnCompletedEvent : IEvent
     {
         long OperatorId { get; }
+    }
+
+    public interface ISubscribeEvent : IEvent
+    {
+        long ChildId { get; }
+        long ParentId { get; }
+    }
+
+    public interface IUnsubscribeEvent : IEvent
+    {
+        long SubscriptionId { get; }
     }
 }

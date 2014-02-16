@@ -26,7 +26,7 @@ namespace RxSpy
 
         public static void Launch()
         {
-            Launch(TimeSpan.FromSeconds(5));
+            Launch(TimeSpan.FromHours(5));
         }
 
         public static void Launch(TimeSpan timeout)
@@ -43,7 +43,7 @@ namespace RxSpy
 
             Console.WriteLine("Server running at " + server.Address);
 
-            Process.Start(Path.Combine(Environment.CurrentDirectory, pathToGui), server.Address.AbsoluteUri);
+            //Process.Start(Path.Combine(Environment.CurrentDirectory, pathToGui), server.Address.AbsoluteUri);
 
             var psi = new ProcessStartInfo(pathToGui);
             psi.Arguments = server.Address.AbsoluteUri;
@@ -64,7 +64,7 @@ namespace RxSpy
 
         static string FindGuiPath()
         {
-            return "RxSpy.HttpTest.exe";
+            return @"..\..\..\RxSpy\bin\Debug\RxSpy.exe";
         }
 
         static void InstallInterceptingQueryLanguage(RxSpySession session)

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RxSpy.Events
 {
-    internal class UnsubscribeEvent : Event
+    internal class UnsubscribeEvent : Event, IUnsubscribeEvent
     {
         public long SubscriptionId { get; private set; }
 

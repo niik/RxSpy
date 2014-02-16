@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ReactiveUI;
+using RxSpy.Events;
 
 namespace RxSpy.Models
 {
-    public class RxSpySubscription: ReactiveObject
+    public class RxSpySubscriptionModel: ReactiveObject
     {
+        public long SubscriptionId { get; set; }
+
         RxSpyObservableModel _parent;
         public RxSpyObservableModel Parent
         {
@@ -30,6 +33,12 @@ namespace RxSpy.Models
             set { this.RaiseAndSetIfChanged(ref _isActive, value); }
         }
 
-
+        public RxSpySubscriptionModel(long subscriptionId, RxSpyObservableModel child, RxSpyObservableModel parent)
+        {
+            SubscriptionId = subscriptionId;
+            Parent = parent;
+            Child = child;
+            IsActive = true;
+        }
     }
 }

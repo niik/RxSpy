@@ -12,7 +12,7 @@ namespace RxSpy.Events
         readonly long _id;
         readonly long _ts;
 
-        public EventType Type { get { return _type; } }
+        public EventType EventType { get { return _type; } }
         public long EventId { get { return _id; } }
         public long EventTime { get { return _ts; } }
 

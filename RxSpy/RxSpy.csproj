@@ -81,17 +81,25 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="..\RxSpy.Server\Events\EventType.cs">
-      <Link>Models\EventType.cs</Link>
+      <Link>Models\Events\EventType.cs</Link>
     </Compile>
     <Compile Include="..\RxSpy.Server\Events\Interfaces.cs">
-      <Link>Models\Interfaces.cs</Link>
+      <Link>Models\Events\Interfaces.cs</Link>
     </Compile>
     <Compile Include="AppStartup\StartupSequence.cs" />
     <Compile Include="Communication\IRxSpyClient.cs" />
     <Compile Include="Communication\RxSpyHttpClient.cs" />
+    <Compile Include="Communication\Serialization\RxSpyJsonSerializerStrategy.cs" />
+    <Compile Include="Models\Events\CallSite.cs" />
+    <Compile Include="Models\Events\Event.cs" />
+    <Compile Include="Models\Events\MethodInfo.cs" />
+    <Compile Include="Models\Events\OnNextEvent.cs" />
+    <Compile Include="Models\Events\OperatorCreatedEvent.cs" />
+    <Compile Include="Models\Events\SubscribeEvent.cs" />
+    <Compile Include="Models\Events\UnsubscribeEvent.cs" />
     <Compile Include="Models\RxSpyObservableModel.cs" />
     <Compile Include="Models\RxSpySessionModel.cs" />
-    <Compile Include="Models\RxSpySubscription.cs" />
+    <Compile Include="Models\RxSpySubscriptionModel.cs" />
     <Compile Include="SimpleJson.cs" />
     <Compile Include="ViewModels\RxSpySessionViewModel.cs" />
     <Page Include="MainWindow.xaml">

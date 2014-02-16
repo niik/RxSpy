@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RxSpy.Events
 {
-    internal class SubscribeEvent : Event
+    internal class SubscribeEvent : Event, ISubscribeEvent
     {
         public long ChildId { get; private set; }
         public long ParentId { get; private set; }
