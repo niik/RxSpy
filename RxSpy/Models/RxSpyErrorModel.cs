@@ -6,13 +6,13 @@ using RxSpy.Events;
 
 namespace RxSpy.Models
 {
-    public class RxSpyError
+    public class RxSpyErrorModel
     {
         public ITypeInfo ErrorType { get; set; }
         public string Message { get; set; }
         public TimeSpan Received { get; set; }
 
-        public RxSpyError(IOnErrorEvent onErrorEvent)
+        public RxSpyErrorModel(IOnErrorEvent onErrorEvent)
         {
             Received = TimeSpan.FromMilliseconds(onErrorEvent.EventTime);
             ErrorType = onErrorEvent.ErrorType;

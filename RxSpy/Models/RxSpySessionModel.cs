@@ -94,8 +94,7 @@ namespace RxSpy.Models
             RxSpyObservableModel operatorModel;
             observableRepository.TryGetValue(onErrorEvent.OperatorId, out operatorModel);
 
-            operatorModel.Error = new RxSpyError(onErrorEvent);
-            operatorModel.IsActive = false;
+            operatorModel.OnError(onErrorEvent);
         }
 
         private void OnNext(IOnNextEvent onNextEvent)
@@ -103,7 +102,7 @@ namespace RxSpy.Models
             RxSpyObservableModel operatorModel;
             observableRepository.TryGetValue(onNextEvent.OperatorId, out operatorModel);
 
-            operatorModel.ObservedValues.Add(new RxSpyObservedValue(onNextEvent));
+            operatorModel.OnNext(onNextEvent);
         }
 
         void OnCompleted(IOnCompletedEvent onCompletedEvent)
@@ -113,7 +112,7 @@ namespace RxSpy.Models
 
             if (operatorModel != null)
             {
-                operatorModel.IsActive = false;
+                operatorModel.OnCompleted(onCompletedEvent);
             }
         }
 

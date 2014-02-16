@@ -10,8 +10,8 @@ namespace RxSpy.Models
 {
     public class RxSpyObservableModel: ReactiveObject
     {
-        public long Id { get; private set; }
-        public string Name { get; private set; }
+        public long Id { get; set; }
+        public string Name { get; set; }
 
         public IMethodInfo OperatorMethod { get; private set; }
         public ICallSite CallSite { get; private set; }
@@ -25,13 +25,6 @@ namespace RxSpy.Models
             private set { this.RaiseAndSetIfChanged(ref _subscriptions, value); }
         }
 
-        long _totalSubscriptionCount;
-        public long TotalSubscriptionCount
-        {
-            get { return _totalSubscriptionCount; }
-            set { this.RaiseAndSetIfChanged(ref _totalSubscriptionCount, value); }
-        }
-
         IReactiveDerivedList<RxSpySubscriptionModel> _activeSubscriptions;
         public IReactiveDerivedList<RxSpySubscriptionModel> ActiveSubscriptions
         {
@@ -39,8 +32,8 @@ namespace RxSpy.Models
             private set { this.RaiseAndSetIfChanged(ref _activeSubscriptions, value); }
         }
 
-        ReactiveList<RxSpyObservedValue> _observedValues;
-        public ReactiveList<RxSpyObservedValue> ObservedValues
+        ReactiveList<RxSpyObservedValueModel> _observedValues;
+        public ReactiveList<RxSpyObservedValueModel> ObservedValues
         {
             get { return _observedValues; }
             private set { this.RaiseAndSetIfChanged(ref _observedValues, value); }
@@ -52,8 +45,8 @@ namespace RxSpy.Models
             get { return _hasSubscribers.Value; }
         }
 
-        RxSpyError _error;
-        public RxSpyError Error
+        RxSpyErrorModel _error;
+        public RxSpyErrorModel Error
         {
             get { return _error; }
             set { this.RaiseAndSetIfChanged(ref _error, value); }
@@ -64,6 +57,13 @@ namespace RxSpy.Models
         {
             get { return _isActive; }
             set { this.RaiseAndSetIfChanged(ref _isActive, value); }
+        }
+
+        long _valuesProduced;
+        public long ValuesProduced
+        {
+            get { return _valuesProduced; }
+            set { this.RaiseAndSetIfChanged(ref _valuesProduced, value); }
         }
 
         public RxSpyObservableModel(IOperatorCreatedEvent createdEvent)
@@ -78,10 +78,27 @@ namespace RxSpy.Models
 
             Subscriptions = new ReactiveList<RxSpySubscriptionModel>();
             ActiveSubscriptions = Subscriptions.CreateDerivedCollection(x => x, filter: x => x.IsActive);
-            ObservedValues = new ReactiveList<RxSpyObservedValue>();
+            ObservedValues = new ReactiveList<RxSpyObservedValueModel>();
 
             this.WhenAnyValue(x => x.Subscriptions.Count, x => x > 0)
                 .ToProperty(this, x => x.HasSubscribers, out _hasSubscribers);
+        }
+
+        public void OnNext(IOnNextEvent onNextEvent)
+        {
+            ObservedValues.Add(new RxSpyObservedValueModel(onNextEvent));
+            ValuesProduced++;
+        }
+
+        public void OnCompleted(IOnCompletedEvent onCompletedEvent)
+        {
+            IsActive = false;
+        }
+
+        public void OnError(IOnErrorEvent onErrorEvent)
+        {
+            Error = new RxSpyErrorModel(onErrorEvent);
+            IsActive = false;
         }
     }
 }

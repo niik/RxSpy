@@ -32,8 +32,11 @@ namespace RxSpy.TestConsole
                 using (obs6.Subscribe())
                 {
                     Console.ReadLine();
-                    Console.WriteLine("Creating new observable");
+                    Console.WriteLine("Disposing of all observables");
                 }
+
+                Console.WriteLine("Press enter to begin again");
+                Console.ReadLine();
             }
         }
     }

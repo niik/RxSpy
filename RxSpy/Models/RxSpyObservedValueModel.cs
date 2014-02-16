@@ -7,13 +7,13 @@ using RxSpy.Events;
 
 namespace RxSpy.Models
 {
-    public class RxSpyObservedValue
+    public class RxSpyObservedValueModel
     {
         public string ValueType { get; set; }
         public string Value { get; set; }
         public TimeSpan Received { get; set; }
 
-        public RxSpyObservedValue(IOnNextEvent onNextEvent)
+        public RxSpyObservedValueModel(IOnNextEvent onNextEvent)
         {
             ValueType = onNextEvent.ValueType;
             Value = onNextEvent.Value;

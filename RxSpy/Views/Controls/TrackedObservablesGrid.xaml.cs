@@ -13,42 +13,42 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ReactiveUI;
+using RxSpy.Models;
 using RxSpy.ViewModels;
 
-namespace RxSpy
+namespace RxSpy.Views.Controls
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for TrackedObservablesGrid.xaml
     /// </summary>
-    public partial class MainWindow : Window, IViewFor<MainViewModel>
+    public partial class TrackedObservablesGrid : UserControl, IViewFor<RxSpyObservablesGridViewModel>
     {
-        public MainWindow()
+        public TrackedObservablesGrid()
         {
             InitializeComponent();
 
-            DataContextChanged += (s, e) => ViewModel = e.NewValue as MainViewModel;
-            DataContext = RxApp.DependencyResolver.GetService<MainViewModel>();
+            DataContextChanged += (s, e) => ViewModel = e.NewValue as RxSpyObservablesGridViewModel;
 
-            this.OneWayBind(ViewModel, vm => vm.SpySessionViewModel.GridViewModel, v => v.observablesGrid.DataContext);
+            this.OneWayBind(ViewModel, vm => vm.Observables, v => v.observablesGrid.ItemsSource);
         }
 
-        public MainViewModel ViewModel
+        public RxSpyObservablesGridViewModel ViewModel
         {
-            get { return GetValue(ViewModelProperty) as MainViewModel; }
+            get { return GetValue(ViewModelProperty) as RxSpyObservablesGridViewModel; }
             set { SetValue(ViewModelProperty, value); }
         }
 
         public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(
             "ViewModel",
-            typeof(MainViewModel),
-            typeof(MainWindow),
+            typeof(RxSpyObservablesGridViewModel),
+            typeof(TrackedObservablesGrid),
             new PropertyMetadata(null)
         );
 
         object IViewFor.ViewModel
         {
             get { return ViewModel; }
-            set { ViewModel = value as MainViewModel; }
+            set { ViewModel = value as RxSpyObservablesGridViewModel; }
         }
     }
 }

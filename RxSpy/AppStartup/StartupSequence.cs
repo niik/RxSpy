@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using RxSpy.Communication;
 using RxSpy.Models;
+using RxSpy.ViewModels;
 
 namespace RxSpy.AppStartup
 {
@@ -15,7 +16,7 @@ namespace RxSpy.AppStartup
         public static void Start()
         {
             var args = Environment.GetCommandLineArgs();
-            var address = new Uri("http://localhost:63698/rxspy/");
+            var address = new Uri("http://localhost:65073/rxspy/");
 
             var client = new RxSpyHttpClient();
 
@@ -25,6 +26,10 @@ namespace RxSpy.AppStartup
                 .Where(x => x != null)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(session.OnEvent);
+
+            var mainViewModel = new MainViewModel(new RxSpySessionViewModel(session));
+
+            RxApp.MutableResolver.Register(() => mainViewModel, typeof(MainViewModel));
         }
     }
 }
