@@ -7,7 +7,7 @@ using RxSpy.Utils;
 
 namespace RxSpy.Events
 {
-    internal class OnNextEvent : Event
+    internal class OnNextEvent : Event, IOnNextEvent
     {
         public long OperatorId { get; private set; }
         public string ValueType { get; private set; }

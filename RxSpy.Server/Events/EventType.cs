@@ -12,7 +12,7 @@ namespace RxSpy.Events
         OperatorCollected,
         Subscribe,
         Unsubscribe,
-     
+
         OnNext,
         OnError,
         OnCompleted,

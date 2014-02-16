@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace RxSpy.Events
 {
-    public class CallSite
+    public class CallSite : ICallSite
     {
         public int Line { get; private set; }
         public string File { get; private set; }
         public int ILOffset { get; private set; }
-        public MethodInfo Method { get; private set; }
+        public IMethodInfo Method { get; private set; }
 
         public CallSite(StackFrame frame)
         {

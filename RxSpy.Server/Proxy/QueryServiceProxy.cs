@@ -30,7 +30,7 @@ namespace RxSpy.Proxy
             if (call == null)
                 throw new NotImplementedException();
 
-            var operatorCallSite = new CallSite(call.MethodBase);
+            var operatorCallSite = new MethodInfo(call.MethodBase);
             var callSite = new CallSite(new StackTrace(4, true).GetFrames()[0]);
             var operatorInfo = new OperatorInfo(callSite, operatorCallSite);
 

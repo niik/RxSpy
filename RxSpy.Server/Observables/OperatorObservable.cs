@@ -50,14 +50,15 @@ namespace RxSpy.Observables
         {
             var subscriberOperatorInfo = _session.GetOperatorInfoFor(observer);
 
-            _session.EnqueueEvent(Event.Subscribe(subscriberOperatorInfo, OperatorInfo));
+            var ev = Event.Subscribe(subscriberOperatorInfo, OperatorInfo);
+            _session.EnqueueEvent(ev);
 
             var disp = base.Subscribe(observer);
 
             return Disposable.Create(() =>
             {
                 disp.Dispose();
-                _session.EnqueueEvent(Event.Unsubscribe(subscriberOperatorInfo, OperatorInfo));
+                _session.EnqueueEvent(Event.Unsubscribe(ev.EventId));
             });
         }
 

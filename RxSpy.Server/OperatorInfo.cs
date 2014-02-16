@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
+﻿using System.Threading;
 using RxSpy.Events;
-using RxSpy.Observables;
-using RxSpy.Utils;
 
 namespace RxSpy
 {
@@ -17,22 +12,22 @@ namespace RxSpy
         readonly long _id;
         readonly string _friendlyName;
         readonly CallSite _callSite;
-        readonly CallSite _operatorCallSite;
+        readonly MethodInfo _operatorMethod;
 
         public string Name { get { return _name; } }
         public long Id { get { return _id; } }
         public CallSite CallSite { get { return _callSite; } }
-        public CallSite OperatorCallSite { get { return _operatorCallSite; } }
+        public MethodInfo OperatorMethod { get { return _operatorMethod; } }
         public bool IsAnonymous { get { return _anonymous; } }
 
-        internal OperatorInfo(CallSite callSite, CallSite operatorCallSite)
+        internal OperatorInfo(CallSite callSite, MethodInfo operatorMethod)
         {
             _id = Interlocked.Increment(ref idCounter);
 
             _callSite = callSite;
-            _operatorCallSite = operatorCallSite;
+            _operatorMethod = operatorMethod;
 
-            _name = _operatorCallSite.Method.Name;
+            _name = _operatorMethod.Name;
             _friendlyName = _name + "#" + _id;
             _anonymous = false;
         }

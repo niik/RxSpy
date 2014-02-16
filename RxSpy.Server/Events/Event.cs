@@ -4,7 +4,7 @@ using freakcode.frequency;
 
 namespace RxSpy.Events
 {
-    internal abstract class Event
+    internal abstract class Event : IEvent
     {
         static long counter = 0;
 
@@ -53,9 +53,9 @@ namespace RxSpy.Events
             return new SubscribeEvent(child, parent);
         }
 
-        internal static Event Unsubscribe(OperatorInfo child, OperatorInfo parent)
+        internal static Event Unsubscribe(long subscriptionId)
         {
-            return new UnsubscribeEvent(child, parent);
+            return new UnsubscribeEvent(subscriptionId);
         }
     }
 }

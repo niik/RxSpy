@@ -7,14 +7,12 @@ namespace RxSpy.Events
 {
     internal class UnsubscribeEvent : Event
     {
-        public long ChildId { get; private set; }
-        public long ParentId { get; private set; }
+        public long SubscriptionId { get; private set; }
 
-        public UnsubscribeEvent(OperatorInfo child, OperatorInfo parent)
+        public UnsubscribeEvent(long subscriptionId)
             : base(EventType.Unsubscribe)
         {
-            ChildId = child.Id;
-            ParentId = parent.Id;
+            SubscriptionId = subscriptionId;
         }
     }
 }

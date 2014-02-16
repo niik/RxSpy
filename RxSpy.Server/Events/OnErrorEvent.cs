@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RxSpy.Events
 {
-    internal class OnErrorEvent: Event
+    internal class OnErrorEvent: Event, IOnErrorEvent
     {
         public Type ErrorType { get; private set; }
         public string Message { get; private set; }

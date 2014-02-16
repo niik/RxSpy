@@ -8,7 +8,7 @@ using bcl = System.Reflection;
 
 namespace RxSpy.Events
 {
-    public class MethodInfo
+    public class MethodInfo: IMethodInfo
     {
         public string Namespace { get; private set; }
         public string DeclaringType { get; private set; }

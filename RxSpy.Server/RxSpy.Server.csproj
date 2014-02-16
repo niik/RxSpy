@@ -59,6 +59,7 @@
     <Compile Include="Communication\Serialization\RxSpyJsonSerializerStrategy.cs" />
     <Compile Include="Events\Event.cs" />
     <Compile Include="Events\EventType.cs" />
+    <Compile Include="Events\Interfaces.cs" />
     <Compile Include="Events\MethodInfo.cs" />
     <Compile Include="Events\OnCompletedEvent.cs" />
     <Compile Include="Events\OnErrorEvent.cs" />
