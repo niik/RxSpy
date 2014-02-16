@@ -5,18 +5,27 @@
         xmlns:graph="clr-namespace:RxSpy.ViewModels.Graphs"
         xmlns:graphsharp="clr-namespace:GraphSharp.Controls;assembly=GraphSharp.Controls"
         xmlns:extbehaviour="clr-namespace:WPFExtensions.AttachedBehaviours;assembly=WPFExtensions"
-        Title="GraphWindow" Height="600" Width="450">
+        Title="GraphWindow" MinHeight="300" MinWidth="450" SizeToContent="WidthAndHeight">
     <Grid>
 
         <Grid.Resources>
 
             <DataTemplate DataType="{x:Type models:RxSpyObservableModel}">
-                
-                <Border Background="#1BA8E0" BorderThickness="0" CornerRadius="5">
-                    <StackPanel Orientation="Vertical" Margin="6" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Path=Name, Mode=OneWay}" Foreground="White" />
+                <Border x:Name="border" Background="#30659b" BorderThickness="0" CornerRadius="5">
+                    <StackPanel Orientation="Vertical" Margin="12,8" VerticalAlignment="Center">
+                        <TextBlock x:Name="name" Text="{Binding Path=Name, Mode=OneWay}" Foreground="White" />
                     </StackPanel>
                 </Border>
+                
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Path=HasError}" Value="True">
+                        <Setter Property="Background" Value="#860f0f" TargetName="border" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=IsActive}" Value="False">
+                        <Setter Property="Opacity" Value="0.5" TargetName="border" />
+                        <Setter Property="FontStyle" Value="Italic" TargetName="name" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
             </DataTemplate>
 
             <Style TargetType="{x:Type graphsharp:VertexControl}">
@@ -31,16 +40,16 @@
             </Style>
         </Grid.Resources>
         
-        <graph:ObservableGraphLayout 
-            x:Name="graphLayout" 
-            Margin="10" 
-            LayoutAlgorithmType="EfficientSugiyama"
-            IsAnimationEnabled="False"
-            CreationTransition="{x:Null}"
-            AsyncCompute="True"
-            LayoutMode="Automatic"
-            OverlapRemovalAlgorithmType="FSA"
-            FlowDirection="LeftToRight" />
-
+        <Viewbox Margin="20" StretchDirection="DownOnly">
+            <graph:ObservableGraphLayout 
+                x:Name="graphLayout" 
+                LayoutAlgorithmType="EfficientSugiyama"
+                IsAnimationEnabled="False"
+                CreationTransition="{x:Null}"
+                AsyncCompute="True"
+                LayoutMode="Automatic"
+                OverlapRemovalAlgorithmType="FSA"
+                FlowDirection="LeftToRight" />
+        </Viewbox>
     </Grid>
 </Window>

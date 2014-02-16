@@ -32,8 +32,10 @@ namespace RxSpy.Communication.Serialization
                     case EventType.Subscribe: return base.DeserializeObject(value, typeof(SubscribeEvent));
                     case EventType.Unsubscribe: return base.DeserializeObject(value, typeof(UnsubscribeEvent));
                     case EventType.OnNext: return base.DeserializeObject(value, typeof(OnNextEvent));
+                    case EventType.OnError: return base.DeserializeObject(value, typeof(OnErrorEvent));
+                    case EventType.OnCompleted: return base.DeserializeObject(value, typeof(OnCompletedEvent));
                     case EventType.TagOperator: return base.DeserializeObject(value, typeof(TagOperatorEvent));
-                    default: return null;
+                    default: throw new NotImplementedException();
                 }
             }
 

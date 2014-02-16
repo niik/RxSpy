@@ -60,6 +60,12 @@ namespace RxSpy.Models
             set { this.RaiseAndSetIfChanged(ref _error, value); }
         }
 
+        readonly ObservableAsPropertyHelper<bool> _hasError;
+        public bool HasError
+        {
+            get { return _hasError.Value; }
+        }
+
         bool _isActive;
         public bool IsActive
         {
@@ -103,6 +109,9 @@ namespace RxSpy.Models
             Children = new ReactiveList<RxSpyObservableModel>();
 
             ObservedValues = new ReactiveList<RxSpyObservedValueModel>();
+
+            this.WhenAnyValue(x => x.Error, x => x == null ? false : true)
+                .ToProperty(this, x => x.HasError, out _hasError);
         }
 
         public void OnNext(IOnNextEvent onNextEvent)

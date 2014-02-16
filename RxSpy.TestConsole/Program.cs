@@ -22,8 +22,9 @@ namespace RxSpy.TestConsole
                 var obs3 = obs1.Select(x => "---").SpyTag("Fofofofof");
 
                 var obs4 = obs2.Where(x => x.StartsWith("B"));
+                var obsErr = Observable.Throw<string>(new InvalidOperationException()).Catch(Observable.Return(""));
 
-                var toJoin = new List<IObservable<string>> { obs3, obs4 };
+                var toJoin = new List<IObservable<string>> { obs3, obs4, obsErr };
 
                 var obs5 = Observable.CombineLatest(toJoin);
                 var obs6 = obs5.Select(x => string.Join(", ", x));
