@@ -13,43 +13,39 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ReactiveUI;
-using RxSpy.Models;
 using RxSpy.ViewModels;
 
 namespace RxSpy.Views.Controls
 {
     /// <summary>
-    /// Interaction logic for TrackedObservablesGrid.xaml
+    /// Interaction logic for ObservableDetails.xaml
     /// </summary>
-    public partial class TrackedObservablesGrid : UserControl, IViewFor<RxSpyObservablesGridViewModel>
+    public partial class ObservableDetails : UserControl, IViewFor<RxSpyObservableDetailsViewModel>
     {
-        public TrackedObservablesGrid()
+        public ObservableDetails()
         {
             InitializeComponent();
 
-            DataContextChanged += (s, e) => ViewModel = e.NewValue as RxSpyObservablesGridViewModel;
-
-            this.OneWayBind(ViewModel, vm => vm.Observables, v => v.observablesGrid.ItemsSource);
-            this.Bind(ViewModel, vm => vm.SelectedItem, v => v.observablesGrid.SelectedItem);
+            this.OneWayBind(ViewModel, vm => vm.ObservedValues, v => v.observableValuesGrid.ItemsSource);
         }
 
-        public RxSpyObservablesGridViewModel ViewModel
+        public RxSpyObservableDetailsViewModel ViewModel
         {
-            get { return GetValue(ViewModelProperty) as RxSpyObservablesGridViewModel; }
+            get { return GetValue(ViewModelProperty) as RxSpyObservableDetailsViewModel; }
             set { SetValue(ViewModelProperty, value); }
         }
 
         public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(
             "ViewModel",
-            typeof(RxSpyObservablesGridViewModel),
-            typeof(TrackedObservablesGrid),
+            typeof(RxSpyObservableDetailsViewModel),
+            typeof(ObservableDetails),
             new PropertyMetadata(null)
         );
 
         object IViewFor.ViewModel
         {
             get { return ViewModel; }
-            set { ViewModel = value as RxSpyObservablesGridViewModel; }
+            set { ViewModel = value as RxSpyObservableDetailsViewModel; }
         }
     }
 }

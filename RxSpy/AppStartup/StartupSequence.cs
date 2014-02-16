@@ -9,6 +9,7 @@ using RxSpy.Communication;
 using RxSpy.Models;
 using RxSpy.ViewModels;
 using RxSpy.Views;
+using RxSpy.Views.Controls;
 
 namespace RxSpy.AppStartup
 {
@@ -28,10 +29,13 @@ namespace RxSpy.AppStartup
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(session.OnEvent);
 
-            var mainViewModel = new MainViewModel(new RxSpySessionViewModel(session));
+            var mainViewModel = new MainViewModel(session);
 
             RxApp.MutableResolver.RegisterConstant(mainViewModel, typeof(MainViewModel));
+
             RxApp.MutableResolver.Register(() => new MainView(), typeof(IViewFor<MainViewModel>));
+            RxApp.MutableResolver.Register(() => new TrackedObservablesGrid(), typeof(IViewFor<RxSpyObservablesGridViewModel>));
+            RxApp.MutableResolver.Register(() => new ObservableDetails(), typeof(IViewFor<RxSpyObservableDetailsViewModel>));
         }
     }
 }

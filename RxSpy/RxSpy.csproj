@@ -107,9 +107,13 @@
     <Compile Include="Models\RxSpySubscriptionModel.cs" />
     <Compile Include="SimpleJson.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\RxObservableDetailsViewModel.cs" />
     <Compile Include="ViewModels\RxSpyObservableGridItemViewModel.cs" />
     <Compile Include="ViewModels\RxSpyObservablesGridViewModel.cs" />
-    <Compile Include="ViewModels\RxSpySessionViewModel.cs" />
+    <Compile Include="ViewModels\RxSpyObservedValueViewModel.cs" />
+    <Compile Include="Views\Controls\ObservableDetails.xaml.cs">
+      <DependentUpon>ObservableDetails.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Controls\TrackedObservablesGrid.xaml.cs">
       <DependentUpon>TrackedObservablesGrid.xaml</DependentUpon>
     </Compile>
@@ -128,6 +132,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\Controls\ObservableDetails.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Controls\TrackedObservablesGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

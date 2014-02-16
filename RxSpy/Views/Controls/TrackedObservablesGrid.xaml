@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="500">
     <Grid>
-        <DataGrid x:Name="observablesGrid" AutoGenerateColumns="False">
+        <DataGrid x:Name="observablesGrid" AutoGenerateColumns="False" SelectionMode="Single" CanUserDeleteRows="False" SelectionUnit="FullRow">
             <DataGrid.ItemsSource>
                 <x:Array Type="viewModels:RxSpyObservableGridItemViewModel">
                 </x:Array>

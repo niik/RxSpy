@@ -19,6 +19,12 @@ namespace RxSpy.ViewModels
             get { return _observables.Value; }
         }
 
+        RxSpyObservableGridItemViewModel _selectedItem;
+        public RxSpyObservableGridItemViewModel SelectedItem
+        {
+            get { return _selectedItem; }
+            set { this.RaiseAndSetIfChanged(ref _selectedItem, value); }
+        }
 
         public RxSpyObservablesGridViewModel(RxSpySessionModel model)
         {

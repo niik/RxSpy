@@ -12,7 +12,7 @@ namespace RxSpy.ViewModels
 {
     public class RxSpyObservableGridItemViewModel : ReactiveObject
     {
-        RxSpyObservableModel _model { get; set; }
+        public RxSpyObservableModel Model { get; private set; }
 
         readonly ObservableAsPropertyHelper<string> _name;
         public string Name
@@ -64,30 +64,30 @@ namespace RxSpy.ViewModels
 
         public RxSpyObservableGridItemViewModel(RxSpyObservableModel model)
         {
-            _model = model;
+            Model = model;
 
-            this.WhenAnyValue(x => x._model.Name)
+            this.WhenAnyValue(x => x.Model.Name)
                 .ToProperty(this, x => x.Name, out _name);
 
-            this.WhenAnyValue(x => x._model.ValuesProduced)
+            this.WhenAnyValue(x => x.Model.ValuesProduced)
                 .ToProperty(this, x => x.ValuesProduced, out _valuesProduced);
 
-            this.WhenAnyValue(x => x._model.Children.Count)
+            this.WhenAnyValue(x => x.Model.Children.Count)
                 .ToProperty(this, x => x.TotalSubscriptions, out _totalSubscriptions);
 
-            this.WhenAnyValue(x => x._model.Parents.Count)
+            this.WhenAnyValue(x => x.Model.Parents.Count)
                 .ToProperty(this, x => x.Parents, out _parents);
 
-            this.WhenAnyValue(x => x._model.Children.Count)
+            this.WhenAnyValue(x => x.Model.Children.Count)
                 .ToProperty(this, x => x.Children, out _children);
 
-            this.WhenAnyValue(x => x._model.Ancestors)
+            this.WhenAnyValue(x => x.Model.Ancestors)
                 .ToProperty(this, x => x.Ancestors, out _ancestors);
 
-            this.WhenAnyValue(x => x._model.Descendants)
+            this.WhenAnyValue(x => x.Model.Descendants)
                 .ToProperty(this, x => x.Descendants, out _descendants);
 
-            this.WhenAnyValue(x => x._model.CallSite, x => GetCallSiteString(x))
+            this.WhenAnyValue(x => x.Model.CallSite, x => GetCallSiteString(x))
                 .ToProperty(this, x => x.CallSite, out _callSite);
         }
 
