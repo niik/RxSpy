@@ -8,6 +8,7 @@ using ReactiveUI;
 using RxSpy.Communication;
 using RxSpy.Models;
 using RxSpy.ViewModels;
+using RxSpy.Views;
 
 namespace RxSpy.AppStartup
 {
@@ -29,7 +30,8 @@ namespace RxSpy.AppStartup
 
             var mainViewModel = new MainViewModel(new RxSpySessionViewModel(session));
 
-            RxApp.MutableResolver.Register(() => mainViewModel, typeof(MainViewModel));
+            RxApp.MutableResolver.RegisterConstant(mainViewModel, typeof(MainViewModel));
+            RxApp.MutableResolver.Register(() => new MainView(), typeof(IViewFor<MainViewModel>));
         }
     }
 }

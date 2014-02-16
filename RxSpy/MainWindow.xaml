@@ -1,9 +1,14 @@
 ﻿<Window x:Class="RxSpy.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:rx="clr-namespace:ReactiveUI.Xaml;assembly=ReactiveUI.Xaml"
         xmlns:ctl="clr-namespace:RxSpy.Views.Controls"
         Title="RxSpy" Height="450" Width="600">
     <Grid>
-        <ctl:TrackedObservablesGrid x:Name="observablesGrid" />
+        <rx:ViewModelViewHost 
+            x:Name="viewHost" 
+            HorizontalContentAlignment="Stretch" 
+            VerticalContentAlignment="Stretch" 
+        />
     </Grid>
 </Window>
