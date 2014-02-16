@@ -31,6 +31,21 @@ namespace RxSpy.Views.Controls
 
             this.OneWayBind(ViewModel, vm => vm.Observables, v => v.observablesGrid.ItemsSource);
             this.Bind(ViewModel, vm => vm.SelectedItem, v => v.observablesGrid.SelectedItem);
+
+            observablesGrid.MouseDoubleClick += (s, e) =>
+            {
+                var item = observablesGrid.SelectedItem;
+
+                if (item == null)
+                    return;
+
+                var gridItem = (RxSpyObservableGridItemViewModel)item;
+
+                var window = new GraphWindow();
+
+                window.DataContext = new ObservableGraphViewModel(gridItem.Model);
+                window.Show();
+            };
         }
 
         public RxSpyObservablesGridViewModel ViewModel

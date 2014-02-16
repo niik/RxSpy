@@ -1,0 +1,46 @@
+﻿<Window x:Class="RxSpy.GraphWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:RxSpy.Models"
+        xmlns:graph="clr-namespace:RxSpy.ViewModels.Graphs"
+        xmlns:graphsharp="clr-namespace:GraphSharp.Controls;assembly=GraphSharp.Controls"
+        xmlns:extbehaviour="clr-namespace:WPFExtensions.AttachedBehaviours;assembly=WPFExtensions"
+        Title="GraphWindow" Height="600" Width="450">
+    <Grid>
+
+        <Grid.Resources>
+
+            <DataTemplate DataType="{x:Type models:RxSpyObservableModel}">
+                
+                <Border Background="#1BA8E0" BorderThickness="0" CornerRadius="5">
+                    <StackPanel Orientation="Vertical" Margin="6" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Path=Name, Mode=OneWay}" Foreground="White" />
+                    </StackPanel>
+                </Border>
+            </DataTemplate>
+
+            <Style TargetType="{x:Type graphsharp:VertexControl}">
+                <Setter Property="extbehaviour:DragBehaviour.IsDragEnabled" Value="False" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type graphsharp:VertexControl}">
+                            <ContentPresenter Content="{TemplateBinding Vertex}"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
+        
+        <graph:ObservableGraphLayout 
+            x:Name="graphLayout" 
+            Margin="10" 
+            LayoutAlgorithmType="EfficientSugiyama"
+            IsAnimationEnabled="False"
+            CreationTransition="{x:Null}"
+            AsyncCompute="True"
+            LayoutMode="Automatic"
+            OverlapRemovalAlgorithmType="FSA"
+            FlowDirection="LeftToRight" />
+
+    </Grid>
+</Window>

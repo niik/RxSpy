@@ -36,6 +36,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GraphSharp">
+      <HintPath>..\packages\GraphSharp.1.1.0.0\lib\net40\GraphSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="GraphSharp.Controls">
+      <HintPath>..\packages\GraphSharp.1.1.0.0\lib\net40\GraphSharp.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Data">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Graphviz">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Graphviz.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Serialization">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Serialization.dll</HintPath>
+    </Reference>
     <Reference Include="ReactiveUI">
       <HintPath>..\packages\reactiveui-core.5.4.0\lib\Portable-Net45+WinRT45+WP8\ReactiveUI.dll</HintPath>
     </Reference>
@@ -74,6 +92,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WPFExtensions">
+      <HintPath>..\packages\WPFExtensions.1.0.0\lib\WPFExtensions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -90,6 +111,9 @@
     <Compile Include="Communication\IRxSpyClient.cs" />
     <Compile Include="Communication\RxSpyHttpClient.cs" />
     <Compile Include="Communication\Serialization\RxSpyJsonSerializerStrategy.cs" />
+    <Compile Include="GraphWindow.xaml.cs">
+      <DependentUpon>GraphWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\Events\CallSite.cs" />
     <Compile Include="Models\Events\Event.cs" />
     <Compile Include="Models\Events\MethodInfo.cs" />
@@ -107,7 +131,12 @@
     <Compile Include="Models\RxSpySessionModel.cs" />
     <Compile Include="Models\RxSpySubscriptionModel.cs" />
     <Compile Include="SimpleJson.cs" />
+    <Compile Include="ViewModels\Graphs\ObservableGraph.cs" />
+    <Compile Include="ViewModels\Graphs\ObservableGraphLayout.cs" />
+    <Compile Include="ViewModels\Graphs\ObservableVertex.cs" />
+    <Compile Include="ViewModels\Graphs\ObserveableEdge.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\ObservableGraphViewModel.cs" />
     <Compile Include="ViewModels\RxObservableDetailsViewModel.cs" />
     <Compile Include="ViewModels\RxSpyObservableGridItemViewModel.cs" />
     <Compile Include="ViewModels\RxSpyObservablesGridViewModel.cs" />
@@ -121,6 +150,10 @@
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
+    <Page Include="GraphWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
