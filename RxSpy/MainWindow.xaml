@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:rx="clr-namespace:ReactiveUI.Xaml;assembly=ReactiveUI.Xaml"
         xmlns:ctl="clr-namespace:RxSpy.Views.Controls"
-        Title="RxSpy" Height="450" Width="600">
+        Title="RxSpy" Height="500" Width="800">
     <Grid>
         <rx:ViewModelViewHost 
             x:Name="viewHost" 
