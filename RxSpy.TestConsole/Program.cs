@@ -1,14 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RxSpy.Utils;
 
 namespace RxSpy.TestConsole
 {
     class Program
     {
+        [DebuggerDisplay("{foo,nq}")]
+        class Dummy
+        {
+            string foo = "bar";
+        }
+
         static void Main(string[] args)
         {
             RxSpySession.Launch();

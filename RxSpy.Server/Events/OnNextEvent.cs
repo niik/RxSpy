@@ -23,8 +23,7 @@ namespace RxSpy.Events
 
         string GetValueRepresentation(object value)
         {
-            // TODO: Do something cool with DebuggerDisplay if present
-            return (value ?? "null").ToString();
+            return ValueFormatter.ToString(value);
         }
 
     }
