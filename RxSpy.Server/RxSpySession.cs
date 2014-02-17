@@ -101,7 +101,7 @@ namespace RxSpy
             // Attempt to track down our own version
             fi = new FileInfo(Path.Combine(di.FullName,
                 "packages",
-                String.Format("RxSpy.{0}", ourAssembly.GetCustomAttribute<AssemblyVersionAttribute>().Version),
+                String.Format("RxSpy.{0}", ourAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version),
                 "tools",
                 "RxSpy.exe"));
             if (fi.Exists) return fi.FullName;
