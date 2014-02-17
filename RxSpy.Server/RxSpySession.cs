@@ -45,12 +45,12 @@ namespace RxSpy
 
             Console.WriteLine("Server running at " + server.Address);
 
-            //Process.Start(Path.Combine(Environment.CurrentDirectory, pathToGui), server.Address.AbsoluteUri);
-
             var psi = new ProcessStartInfo(pathToGui);
             psi.Arguments = server.Address.AbsoluteUri;
 
+            Process.Start(psi);
             server.WaitForConnection(timeout);
+            
             var session = new RxSpySession(server);
             Current = session;
 
