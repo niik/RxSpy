@@ -70,7 +70,7 @@ namespace RxSpy.ViewModels
         string FormatErrorText(RxSpyErrorModel err)
         {
             if (err == null)
-                return "";
+                return "Nope, you're good";
 
             var sb = new StringBuilder();
 
