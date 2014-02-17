@@ -105,21 +105,8 @@ namespace RxSpy.ViewModels
             this.WhenAnyValue(x => x.Model.Descendants)
                 .ToProperty(this, x => x.Descendants, out _descendants);
 
-            this.WhenAnyValue(x => x.Model.CallSite, x => GetCallSiteString(x))
+            this.WhenAnyValue(x => x.Model.CallSite, x => Convert.ToString(x))
                 .ToProperty(this, x => x.CallSite, out _callSite);
-        }
-
-        private string GetCallSiteString(ICallSite callSite)
-        {
-            if (callSite == null || callSite.Method.Name == null)
-                return "";
-
-            string typeAndMethod = callSite.Method.DeclaringType + "." + callSite.Method.Signature;
-
-            if (callSite.File != null && callSite.Line != -1)
-                return typeAndMethod + " in " + Path.GetFileName(callSite.File) + ":" + callSite.Line;
-
-            return typeAndMethod;
         }
     }
 }

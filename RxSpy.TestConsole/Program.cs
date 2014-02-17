@@ -38,7 +38,7 @@ namespace RxSpy.TestConsole
                 var obs6 = obs5.Select(x => string.Join(", ", x));
 
                 //using (obs.Subscribe())
-                using (obs6.Subscribe())
+                using (obs6.Subscribe(Console.WriteLine))
                 {
                     Console.ReadLine();
                     Console.WriteLine("Disposing of all observables");

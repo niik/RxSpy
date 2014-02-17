@@ -37,6 +37,12 @@ namespace RxSpy.ViewModels.Graphs
             get { return _signalsCount.Value; }
         }
 
+        readonly ObservableAsPropertyHelper<string> _tooltip;
+        public string ToolTip
+        {
+            get { return _tooltip.Value; }
+        }
+
         public ObservableVertex(RxSpyObservableModel model)
         {
             Id = model.Id;
@@ -53,6 +59,9 @@ namespace RxSpy.ViewModels.Graphs
 
             this.WhenAnyValue(x => x.Model.ValuesProduced)
                 .ToProperty(this, x => x.SignalsCount, out _signalsCount);
+
+            this.WhenAnyValue(x => x.Model.Id, x => x.Model.CallSite, (x, y) => { return "#" + Id + " " + Convert.ToString(y); })
+                .ToProperty(this, x => x.ToolTip, out _tooltip);
         }
 
         public bool Equals(ObservableVertex other)
