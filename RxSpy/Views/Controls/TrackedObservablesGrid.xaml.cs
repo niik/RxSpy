@@ -43,6 +43,7 @@ namespace RxSpy.Views.Controls
 
                 var window = new GraphWindow();
 
+                window.Title = gridItem.Name;
                 window.DataContext = new ObservableGraphViewModel(gridItem.Model);
                 window.Show();
             };
