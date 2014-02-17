@@ -38,7 +38,7 @@ namespace RxSpy.ViewModels
 
             this.WhenAnyValue(x => x._model.ObservedValues)
                 .Select(x => x.CreateDerivedCollection(m => new RxSpyObservedValueViewModel(m)))
-                .Scan((cur, prev) => { using (prev) return cur; })
+                .Scan((prev, cur) => { using (prev) return cur; })
                 .ToProperty(this, x => x.ObservedValues, out _observedValues);
 
             this.WhenAnyValue(x => x._model.Parents, x => new RxSpyObservablesGridViewModel(x))

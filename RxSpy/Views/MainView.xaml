@@ -12,15 +12,23 @@
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition/>
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <GroupBox Header="Tracked observables" Margin="10">
+        <GroupBox Header="Tracked observables" Margin="10" Grid.Row="0">
             <rx:ViewModelViewHost x:Name="observablesGrid" Margin="10" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
         </GroupBox>
 
-        <GroupBox Header="Details" Margin="10" Grid.Row="2" >
+        <GroupBox Header="Details" Margin="10" Grid.Row="1" >
             <rx:ViewModelViewHost Margin="10" x:Name="detailsView" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  />
         </GroupBox>
+
+
+        <Grid Margin="10" Grid.Row="2">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock><Run x:Name="signals"/> signals, <Run x:Name="errors"/> errors. <Run x:Name="signalsPerSecond"/> signals per second.</TextBlock>
+            </StackPanel>
+        </Grid>
 
     </Grid>
 </UserControl>

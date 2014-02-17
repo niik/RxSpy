@@ -18,6 +18,10 @@ namespace RxSpy.Views
 
             this.OneWayBind(ViewModel, vm => vm.GridViewModel, v => v.observablesGrid.ViewModel);
             this.OneWayBind(ViewModel, vm => vm.DetailsViewModel, v => v.detailsView.ViewModel);
+
+            this.OneWayBind(ViewModel, vm => vm.SignalsPerSecond, v => v.signalsPerSecond.Text);
+            this.OneWayBind(ViewModel, vm => vm.SignalCount, v => v.signals.Text);
+            this.OneWayBind(ViewModel, vm => vm.ErrorCount, v => v.errors.Text);
         }
 
         public MainViewModel ViewModel

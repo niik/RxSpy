@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using ReactiveUI;
 using RxSpy.Events;
+using System.Reactive.Linq;
 
 namespace RxSpy.Models
 {
@@ -15,6 +16,20 @@ namespace RxSpy.Models
             = new ConcurrentDictionary<long, RxSpySubscriptionModel>();
 
         public ReactiveList<RxSpyObservableModel> TrackedObservables { get; set; }
+
+        long _signalCount;
+        public long SignalCount
+        {
+            get { return _signalCount; }
+            set { this.RaiseAndSetIfChanged(ref _signalCount, value); }
+        }
+
+        long _errorCount;
+        public long ErrorCount
+        {
+            get { return _errorCount; }
+            set { this.RaiseAndSetIfChanged(ref _errorCount, value); }
+        }
 
         public RxSpySessionModel()
         {
@@ -97,6 +112,8 @@ namespace RxSpy.Models
 
         private void OnError(IOnErrorEvent onErrorEvent)
         {
+            ErrorCount++;
+
             RxSpyObservableModel operatorModel;
             observableRepository.TryGetValue(onErrorEvent.OperatorId, out operatorModel);
 
@@ -105,6 +122,8 @@ namespace RxSpy.Models
 
         private void OnNext(IOnNextEvent onNextEvent)
         {
+            SignalCount++;
+
             RxSpyObservableModel operatorModel;
             observableRepository.TryGetValue(onNextEvent.OperatorId, out operatorModel);
 
