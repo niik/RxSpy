@@ -43,7 +43,7 @@ namespace RxSpy.Utils
 
             var list = value as System.Collections.IList;
 
-            if (list != null)
+            if (list != null && list.Count < 100)
             {
                 return TypeUtils.ToFriendlyName(valueType) + " {" + string.Join(", ", list.Cast<object>().Select(ToString)) + "}";
             }
