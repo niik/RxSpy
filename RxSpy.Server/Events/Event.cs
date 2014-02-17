@@ -35,7 +35,7 @@ namespace RxSpy.Events
 
         public static Event OnNext(OperatorInfo operatorInfo, Type type, object value)
         {
-            return new OnNextEvent(operatorInfo, type, value);
+            return new OnNextEvent(operatorInfo, type, value, Thread.CurrentThread.ManagedThreadId);
         }
 
         public static Event OnError(OperatorInfo operatorInfo, Exception error)

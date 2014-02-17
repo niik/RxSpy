@@ -48,6 +48,7 @@ namespace RxSpy.Events
         long OperatorId { get; }
         string ValueType { get; }
         string Value { get; }
+        int Thread { get; }
     }
 
     public interface IOnErrorEvent : IEvent

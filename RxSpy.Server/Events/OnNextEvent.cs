@@ -12,8 +12,9 @@ namespace RxSpy.Events
         public long OperatorId { get; private set; }
         public string ValueType { get; private set; }
         public string Value { get; private set; }
+        public int Thread { get; private set; }
 
-        public OnNextEvent(OperatorInfo operatorInfo, Type valueType, object value)
+        public OnNextEvent(OperatorInfo operatorInfo, Type valueType, object value, int thread)
             : base(EventType.OnNext)
         {
             OperatorId = operatorInfo.Id;

@@ -11,6 +11,7 @@
             <DataGrid x:Name="observableValuesGrid" BorderThickness="0" AutoGenerateColumns="False" SelectionMode="Single" CanUserDeleteRows="False" CanUserReorderColumns="False" AreRowDetailsFrozen="True" IsReadOnly="True">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Received" Binding="{Binding Received}" />
+                    <DataGridTextColumn Header="Thread" Binding="{Binding Thread}" />
                     <DataGridTextColumn Header="Type" Binding="{Binding ValueType}" />
                     <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
                 </DataGrid.Columns>

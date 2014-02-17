@@ -30,6 +30,12 @@ namespace RxSpy.ViewModels
             get { return _valueType.Value; }
         }
 
+        readonly ObservableAsPropertyHelper<int> _thread;
+        public int Thread
+        {
+            get { return _thread.Value; }
+        }
+
         public RxSpyObservedValueViewModel(RxSpyObservedValueModel model)
         {
             _model = model;
@@ -42,6 +48,9 @@ namespace RxSpy.ViewModels
             
             this.WhenAnyValue(x => x._model.ValueType)
                 .ToProperty(this, x => x.ValueType, out _valueType);
+
+            this.WhenAnyValue(x => x._model.Thread)
+                .ToProperty(this, x => x.Thread, out _thread);
         }
     }
 }
