@@ -21,11 +21,7 @@ namespace RxSpy.Events
             OperatorId = operatorInfo.Id;
             ErrorType = new TypeInfo(error.GetType());
             Message = error.Message;
-
-            if (error.StackTrace != null && error.StackTrace.Length > 0)
-            {
-                StackTrace = error.StackTrace.ToString();
-            }
+            StackTrace = error.StackTrace;
         }
 
     }
