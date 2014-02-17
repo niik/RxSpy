@@ -92,6 +92,12 @@ namespace RxSpy.Models
             get { return _ancestors.Value; }
         }
 
+        string _status;
+        public string Status
+        {
+            get { return _status; }
+            private set { this.RaiseAndSetIfChanged(ref _status, value); }
+        }
 
         public RxSpyObservableModel(IOperatorCreatedEvent createdEvent)
         {
@@ -123,6 +129,8 @@ namespace RxSpy.Models
                 .Switch()
                 .Select(x => x.Sum() + Parents.Count)
                 .ToProperty(this, x => x.Ancestors, out _ancestors);
+
+            Status = "Active";
         }
 
         public void OnNext(IOnNextEvent onNextEvent)
@@ -134,12 +142,14 @@ namespace RxSpy.Models
         public void OnCompleted(IOnCompletedEvent onCompletedEvent)
         {
             IsActive = false;
+            Status = "Completed";
         }
 
         public void OnError(IOnErrorEvent onErrorEvent)
         {
             Error = new RxSpyErrorModel(onErrorEvent);
             IsActive = false;
+            Status = "Error";
         }
 
         public void OnTag(ITagOperatorEvent onTagEvent)

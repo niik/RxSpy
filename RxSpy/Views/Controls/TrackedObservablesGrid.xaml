@@ -15,6 +15,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="#" Binding="{Binding Id}" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
                 <DataGridTextColumn Header="Parents" Binding="{Binding Path=Parents, StringFormat=N0}" SortMemberPath="Parents" />
                 <DataGridTextColumn Header="Children" Binding="{Binding Path=Children, StringFormat=N0}" SortMemberPath="Children" />
                 <DataGridTextColumn Header="Ancestors" Binding="{Binding Path=Ancestors, StringFormat=N0}" SortMemberPath="Ancestors" />

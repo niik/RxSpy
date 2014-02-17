@@ -74,6 +74,12 @@ namespace RxSpy.ViewModels
             get { return _callSite.Value; }
         }
 
+        readonly ObservableAsPropertyHelper<string> _status;
+        public string Status
+        {
+            get { return _status.Value; }
+        }
+
         public RxSpyObservableGridItemViewModel(RxSpyObservableModel model)
         {
             Model = model;
@@ -107,6 +113,9 @@ namespace RxSpy.ViewModels
 
             this.WhenAnyValue(x => x.Model.CallSite, x => Convert.ToString(x))
                 .ToProperty(this, x => x.CallSite, out _callSite);
+
+            this.WhenAnyValue(x => x.Model.Status)
+                .ToProperty(this, x => x.Status, out _status);
         }
     }
 }
