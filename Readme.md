@@ -4,7 +4,7 @@ Debugging Reactive applications can be hard™. Chaining and joining observables
 
 RxSpy tries to solve or at least alleviate this problem by giving developers a live birds-eye view of the applications, all observables within it and the signals they produce. By referencing a small library your app you can launch a reactive debugging session of sorts which gives you a visual interface through which you can see all observables in your app, the values they produced and where they where created from.    
 
-![rxspy-screenshot-2](https://f.cloud.github.com/assets/634063/2189107/711a5284-9811-11e3-88c7-4da07004a5b6.png)
+![rxspy-screenshot](https://f.cloud.github.com/assets/634063/2190610/ae6c0508-982d-11e3-90b3-bbb3ffbc2317.png)
 
 RxSpy consists of two pieces. ```RxSpy.Server``` which is the small library you include in your app and the visual tool RxSpy. ```RxSpy.Server``` initiates a small server inside of your app which the visual tool can then connect to. Through that connection ```RxSpy.Server``` then streams all observable events that it can possibly get its hands on.
 
