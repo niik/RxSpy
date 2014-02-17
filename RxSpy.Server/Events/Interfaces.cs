@@ -56,6 +56,7 @@ namespace RxSpy.Events
         ITypeInfo ErrorType { get; }
         string Message { get; }
         long OperatorId { get; }
+        string StackTrace { get; }
     }
 
     public interface IOnCompletedEvent : IEvent

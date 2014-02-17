@@ -7,6 +7,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <TabControl>
+        <TabItem x:Name="errorTab" Header="Error" Foreground="Red" Visibility="Collapsed">
+            <TextBox IsReadOnly="True" x:Name="errorText" />
+        </TabItem>
+
         <TabItem Header="Signals">
             <DataGrid x:Name="observableValuesGrid" BorderThickness="0" AutoGenerateColumns="False" SelectionMode="Single" CanUserDeleteRows="False" CanUserReorderColumns="False" AreRowDetailsFrozen="True" IsReadOnly="True">
                 <DataGrid.Columns>
@@ -24,4 +28,5 @@
             <rx:ViewModelViewHost x:Name="childrenView" />
         </TabItem>
     </TabControl>
+
 </UserControl>

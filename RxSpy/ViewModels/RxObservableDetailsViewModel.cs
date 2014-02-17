@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Linq;
+using System.Text;
 using ReactiveUI;
 using RxSpy.Models;
 
@@ -32,6 +33,18 @@ namespace RxSpy.ViewModels
             get { return _children.Value; }
         }
 
+        readonly ObservableAsPropertyHelper<bool> _showErrorTab;
+        public bool ShowErrorTab
+        {
+            get { return _showErrorTab.Value; }
+        }
+
+        readonly ObservableAsPropertyHelper<string> _errorText;
+        public string ErrorText
+        {
+            get { return _errorText.Value; }
+        }
+
         public RxSpyObservableDetailsViewModel(RxSpyObservableModel model)
         {
             _model = model;
@@ -46,6 +59,34 @@ namespace RxSpy.ViewModels
 
             this.WhenAnyValue(x => x._model.Children, x => new RxSpyObservablesGridViewModel(x))
                 .ToProperty(this, x => x.Children, out _children);
+
+            this.WhenAnyValue(x => x._model.HasError)
+                .ToProperty(this, x => x.ShowErrorTab, out _showErrorTab);
+
+            this.WhenAnyValue(x => x._model.Error, FormatErrorText)
+                .ToProperty(this, x => x.ErrorText, out _errorText);
+        }
+
+        string FormatErrorText(RxSpyErrorModel err)
+        {
+            if (err == null)
+                return "";
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine("Received: " + err.Received);
+            sb.AppendLine(err.ErrorType.Namespace + err.ErrorType.Name);
+            sb.AppendLine();
+            sb.AppendLine(err.Message);
+
+            if (!string.IsNullOrEmpty(err.StackTrace))
+            {
+                sb.AppendLine();
+                sb.AppendLine("Stacktrace: ");
+                sb.AppendLine(err.StackTrace);
+            }
+
+            return sb.ToString();
         }
     }
 }

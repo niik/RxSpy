@@ -29,6 +29,9 @@ namespace RxSpy.Views.Controls
             this.OneWayBind(ViewModel, vm => vm.ObservedValues, v => v.observableValuesGrid.ItemsSource);
             this.OneWayBind(ViewModel, vm => vm.Parents, v => v.parentsView.ViewModel);
             this.OneWayBind(ViewModel, vm => vm.Children, v => v.childrenView.ViewModel);
+
+            this.OneWayBind(ViewModel, vm => vm.ShowErrorTab, v => v.errorTab.Visibility);
+            this.OneWayBind(ViewModel, vm => vm.ErrorText, v => v.errorText.Text);
         }
 
         public RxSpyObservableDetailsViewModel ViewModel
