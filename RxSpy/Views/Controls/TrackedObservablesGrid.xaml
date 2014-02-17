@@ -24,6 +24,15 @@
                 <DataGridTextColumn Header="Tag" Binding="{Binding Path=Tag}" />
                 <DataGridTextColumn Header="Created in" Binding="{Binding Path=CallSite}" Width="*" />
             </DataGrid.Columns>
+            <DataGrid.RowStyle>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Status}" Value="Error" >
+                            <Setter Property="Foreground" Value="Red" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
         </DataGrid>
     </Grid>
 </UserControl>

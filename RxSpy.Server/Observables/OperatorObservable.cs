@@ -18,9 +18,9 @@ namespace RxSpy.Observables
             if (source == null)
                 throw new ArgumentNullException("source");
 
-            // This should never happen
-            if (source is OperatorObservable<T>)
-                throw new ArgumentException("Cannot wrap operator observable in another operator observable");
+            // This should never happen but it does with Start and tasks and whatnot, investigate
+            // if (source is OperatorObservable<T>)
+                // throw new ArgumentException("Cannot wrap operator observable in another operator observable");
 
             _session = session;
             _operatorInfo = operatorInfo;
