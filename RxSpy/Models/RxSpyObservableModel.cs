@@ -80,19 +80,18 @@ namespace RxSpy.Models
             set { this.RaiseAndSetIfChanged(ref _valuesProduced, value); }
         }
 
-        int _descendants;
+        readonly ObservableAsPropertyHelper<int> _descendants;
         public int Descendants
         {
-            get { return _descendants; }
-            set { this.RaiseAndSetIfChanged(ref _descendants, value); }
+            get { return _descendants.Value; }
         }
 
-        int _ancestors;
+        readonly ObservableAsPropertyHelper<int> _ancestors;
         public int Ancestors
         {
-            get { return _ancestors; }
-            set { this.RaiseAndSetIfChanged(ref _ancestors, value); }
+            get { return _ancestors.Value; }
         }
+
 
         public RxSpyObservableModel(IOperatorCreatedEvent createdEvent)
         {
@@ -112,6 +111,18 @@ namespace RxSpy.Models
 
             this.WhenAnyValue(x => x.Error, x => x == null ? false : true)
                 .ToProperty(this, x => x.HasError, out _hasError);
+
+            this.WhenAnyValue(x => x.Children.Count)
+                .Select(_ => Observable.CombineLatest(Children.Select(c => c.WhenAnyValue(x => x.Descendants))))
+                .Switch()
+                .Select(x => x.Sum() + Children.Count)
+                .ToProperty(this, x => x.Descendants, out _descendants);
+
+            this.WhenAnyValue(x => x.Parents.Count)
+                .Select(_ => Observable.CombineLatest(Parents.Select(c => c.WhenAnyValue(x => x.Ancestors))))
+                .Switch()
+                .Select(x => x.Sum() + Parents.Count)
+                .ToProperty(this, x => x.Ancestors, out _ancestors);
         }
 
         public void OnNext(IOnNextEvent onNextEvent)
