@@ -143,9 +143,10 @@ namespace RxSpy
             defaultImplementationField.SetValue(null, proxy);
         }
 
-        internal void EnqueueEvent(Event ev)
+        internal long EnqueueEvent(Event ev)
         {
             _server.EnqueueEvent(ev);
+            return ev.EventId;
         }
 
         internal OperatorInfo GetOperatorInfoFor<T>(IObserver<T> observer)
