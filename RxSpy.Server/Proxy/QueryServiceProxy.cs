@@ -166,7 +166,7 @@ namespace RxSpy.Proxy
         {
             // todo: cache
 
-            if (t.IsInterface && t.GetGenericTypeDefinition() == typeof(IObservable<>))
+            if (t.IsInterface && t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IObservable<>))
                 return t;
 
             foreach (var iface in t.GetInterfaces())
@@ -187,7 +187,7 @@ namespace RxSpy.Proxy
         {
             // todo: cache
 
-            if (t.IsInterface && t.GetGenericTypeDefinition() == typeof(IConnectableObservable<>))
+            if (t.IsInterface && t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IConnectableObservable<>))
                 return true;
 
             foreach (var iface in t.GetInterfaces())
