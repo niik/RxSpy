@@ -71,9 +71,11 @@
     <Compile Include="Events\TypeInfo.cs" />
     <Compile Include="Events\UnsubscribeEvent.cs" />
     <Compile Include="Extensions\SpyObservableExtensions.cs" />
+    <Compile Include="Observables\ConnectableOperatorObservable.cs" />
+    <Compile Include="Observables\OperatorConnection.cs" />
     <Compile Include="Observables\IOperatorObservable.cs" />
     <Compile Include="Observables\MITMObservable.cs" />
-    <Compile Include="Observables\OperatorConnection.cs" />
+    <Compile Include="Observables\ConnectableOperatorConnection.cs" />
     <Compile Include="Observables\OperatorObservable.cs" />
     <Compile Include="OperatorInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

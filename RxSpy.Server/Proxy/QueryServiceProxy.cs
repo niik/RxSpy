@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reactive.Subjects;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
@@ -125,7 +126,11 @@ namespace RxSpy.Proxy
             if (iface == null)
                 return source;
 
-            var operatorObservable = typeof(OperatorConnection<>).MakeGenericType(iface.GetGenericArguments());
+            var operatorObservableType = IsConnectableObservable(sourceType)
+                ? typeof(ConnectableOperatorConnection<>)
+                : typeof(OperatorConnection<>);
+
+            var operatorObservable = operatorObservableType.MakeGenericType(iface.GetGenericArguments());
 
             var instance = operatorObservable.GetConstructor(new[] { sourceType, typeof(OperatorInfo) })
                 .Invoke(new object[] { source, operatorInfo });
@@ -145,7 +150,11 @@ namespace RxSpy.Proxy
             if (iface == null)
                 return source;
 
-            var operatorObservable = typeof(OperatorObservable<>).MakeGenericType(iface.GetGenericArguments());
+            var operatorObservableType = IsConnectableObservable(sourceType)
+                ? typeof(ConnectableOperatorObservable<>)
+                : typeof(OperatorObservable<>);
+
+            var operatorObservable = operatorObservableType.MakeGenericType(iface.GetGenericArguments());
 
             var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), sourceType, typeof(OperatorInfo) })
                 .Invoke(new object[] { _session, source, operatorInfo });
@@ -172,6 +181,22 @@ namespace RxSpy.Proxy
         bool IsObservable(Type t)
         {
             return GetIObserverInterface(t) != null;
+        }
+
+        bool IsConnectableObservable(Type t)
+        {
+            // todo: cache
+
+            if (t.IsInterface && t.GetGenericTypeDefinition() == typeof(IConnectableObservable<>))
+                return true;
+
+            foreach (var iface in t.GetInterfaces())
+            {
+                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IConnectableObservable<>))
+                    return true;
+            }
+
+            return false;
         }
 
         public bool CanCastTo(Type fromType, object o)
