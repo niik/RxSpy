@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using RxSpy.Communication.Serialization;
 using RxSpy.Events;
 
 namespace RxSpy.Communication
 {
-    internal class RxSpyFileWriter: IRxSpyServer
+    internal class RxSpyFileWriter : IRxSpyServer
     {
         string _path;
-        StreamWriter _writer;
         RxSpyJsonSerializerStrategy _serializerStrategy;
+        BufferBlock<Event> _queue = new BufferBlock<Event>();
+        CancellationTokenSource _cancellationTokenSource;
 
         public Uri Address
         {
@@ -28,20 +32,42 @@ namespace RxSpy.Communication
 
         public void WaitForConnection(TimeSpan timeout)
         {
-            _writer = new StreamWriter(File.OpenWrite(_path));
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            Task.Factory.StartNew(() => RunQueue(_cancellationTokenSource.Token));
+        }
+
+        async Task RunQueue(CancellationToken ct)
+        {
+            using (var sw = new StreamWriter(File.OpenWrite(_path)))
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var ev = await _queue.ReceiveAsync(ct);
+
+                        if (!ct.IsCancellationRequested)
+                            sw.WriteLine(SimpleJson.SerializeObject(ev, _serializerStrategy));
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine("Write failed: " + e.Message);
+                        return;
+                    }
+                }
+            }
         }
 
         public void EnqueueEvent(Event ev)
         {
-            lock (_writer)
-            {
-                _writer.WriteLine(SimpleJson.SerializeObject(ev, _serializerStrategy));
-            }
+            _queue.Post(ev);
         }
 
         public void Dispose()
         {
-            _writer.Dispose();
+            GC.SuppressFinalize(this);
+            _cancellationTokenSource.Cancel();
         }
     }
 }
