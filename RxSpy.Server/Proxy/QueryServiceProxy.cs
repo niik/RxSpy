@@ -36,6 +36,11 @@ namespace RxSpy.Proxy
                 return new ReturnMessage(call.MethodBase.Invoke(_queryService, call.InArgs), null, 0, null, call);
             }
 
+            if (call.MethodName == "GetAwaiter")
+            {
+                return ProxyCallToRealService(call);
+            }
+
             var operatorCallSite = new MethodInfo(call.MethodBase);
             var callSite = new CallSite(new StackTrace(4, true).GetFrames()[0]);
             var operatorInfo = new OperatorInfo(callSite, operatorCallSite);
