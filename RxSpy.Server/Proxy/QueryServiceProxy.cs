@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reactive;
 using System.Reactive.Subjects;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
@@ -77,7 +78,7 @@ namespace RxSpy.Proxy
         {
             var actualObservable = ProduceActualObservable(call, method, operatorInfo);
 
-            var ret = CreateOperatorObservable(actualObservable, method.ReturnType.GetGenericArguments()[0], method.ReturnType, operatorInfo);
+            var ret = CreateOperatorObservable(actualObservable, method.ReturnType.GetGenericArguments()[0], operatorInfo);
             return new ReturnMessage(ret, null, 0, null, call);
         }
 
@@ -128,7 +129,7 @@ namespace RxSpy.Proxy
                 };
 
             var actualObservable = call.MethodBase.Invoke(_queryService, call.InArgs);
-            var ret = CreateOperatorObservable(actualObservable, signalType, typeof(IObservable<>).MakeGenericType(signalType), operatorInfo);
+            var ret = CreateOperatorObservable(actualObservable, signalType, operatorInfo);
 
             return new ReturnMessage(ret, null, 0, null, call);
         }
@@ -146,21 +147,25 @@ namespace RxSpy.Proxy
                 {
                     var signalType = pt.GetGenericArguments()[0];
 
-                    parameterValues[i] = CreateObservableConnection(args[i], signalType, pt, operatorInfo);
+                    parameterValues[i] = CreateObservableConnection(args[i], signalType, operatorInfo);
                 }
                 else if (pt.IsArray)
                 {
-                    var signalType = pt.GetElementType();
+                    var observableType = pt.GetElementType();
 
-                    if (IsGenericTypeDefinition(signalType, typeof(IObservable<>)))
+                    if (IsGenericTypeDefinition(observableType, typeof(IObservable<>)))
                     {
+                        var signalType = observableType.GetGenericArguments()[0];
+
                         var argArray = (Array)args[i];
-                        var newArray = (Array)Activator.CreateInstance(signalType, new object[] { argArray.Length });
+                        var newArray = Array.CreateInstance(observableType, argArray.Length);
 
                         for (int j = 0; j < argArray.Length; j++)
                         {
-                            newArray.SetValue(CreateObservableConnection(argArray.GetValue(i), signalType, pt, operatorInfo), j);
+                            newArray.SetValue(CreateObservableConnection(argArray.GetValue(j), signalType, operatorInfo), j);
                         }
+
+                        parameterValues[i] = args[i];
                     }
                     else
                     {
@@ -180,7 +185,7 @@ namespace RxSpy.Proxy
                         enumerableConnectionType,
                         new object[] { 
                             args[i], 
-                            new Func<object, object>(o => CreateObservableConnection(o, signalType, observableType, operatorInfo)) 
+                            new Func<object, object>(o => CreateObservableConnection(o, signalType, operatorInfo)) 
                         });
                 }
                 else
@@ -192,21 +197,21 @@ namespace RxSpy.Proxy
             return parameterValues;
         }
 
-        object CreateObservableConnection(object source, Type signalType, Type observableType, OperatorInfo operatorInfo)
+        object CreateObservableConnection(object source, Type signalType, OperatorInfo operatorInfo)
         {
             var operatorObservable = typeof(OperatorConnection<>).MakeGenericType(signalType);
 
-            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), observableType, typeof(OperatorInfo) })
+            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) })
                 .Invoke(new object[] { _session, source, operatorInfo });
 
             return instance;
         }
 
-        object CreateOperatorObservable(object source, Type signalType, Type observableType, OperatorInfo operatorInfo)
+        object CreateOperatorObservable(object source, Type signalType, OperatorInfo operatorInfo)
         {
             var operatorObservable = typeof(OperatorObservable<>).MakeGenericType(signalType);
 
-            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), observableType, typeof(OperatorInfo) })
+            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) })
                 .Invoke(new object[] { _session, source, operatorInfo });
 
             return instance;
