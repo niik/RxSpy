@@ -32,8 +32,11 @@ namespace RxSpy.Utils
 
                     if (node.Value.Item1.TryGetTarget(out obs))
                     {
-                        operatorInfo = node.Value.Item2;
-                        return true;
+                        if (object.ReferenceEquals(obs, value))
+                        {
+                            operatorInfo = node.Value.Item2;
+                            return true;
+                        }
                     }
                     else
                     {
