@@ -80,6 +80,7 @@
     <Compile Include="Observables\MITMObservable.cs" />
     <Compile Include="Observables\ConnectableOperatorConnection.cs" />
     <Compile Include="Observables\OperatorObservable.cs" />
+    <Compile Include="Observables\OperatorObserver.cs" />
     <Compile Include="OperatorInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxy\QueryServiceProxy.cs" />

@@ -31,182 +31,178 @@ namespace RxSpy.Proxy
             if (call == null)
                 throw new NotImplementedException();
 
+            var method = (System.Reflection.MethodInfo)call.MethodBase;
+
             if (RxSpyGroup.IsActive)
             {
-                return new ReturnMessage(call.MethodBase.Invoke(_queryService, call.InArgs), null, 0, null, call);
+                return ForwardCall(call);
             }
 
             if (call.MethodName == "GetAwaiter")
             {
-                return ProxyCallToRealService(call);
+                return ForwardCall(call);
             }
 
             var operatorCallSite = new MethodInfo(call.MethodBase);
             var callSite = new CallSite(new StackTrace(4, true).GetFrames()[0]);
             var operatorInfo = new OperatorInfo(callSite, operatorCallSite);
 
-            var args = ReplaceAllObservablesWithConnections(call.InArgs, operatorInfo);
-            var actualObservable = call.MethodBase.Invoke(_queryService, args);
+            // IConnectableObservable parameters
+            if (call.MethodName == "RefCount")
+            {
+                return HandleRefCount(call, operatorInfo);
+            }
 
-            var ret = TryCreateOperatorObservable(actualObservable, operatorInfo);
+            // IConnectableObservable return types
+            if (Array.IndexOf(_connectableCandidates, call.MethodName) >= 0 &&
+                IsGenericTypeDefinition(method.ReturnType, typeof(IConnectableObservable<>)))
+            {
+                return HandleConnectableReturnType(call, method, operatorInfo);
+            }
+            else if (IsGenericTypeDefinition(method.ReturnType, typeof(IObservable<>)))
+            {
+                return HandleObservableReturnType(call, method, operatorInfo);
+            }
+            else
+            {
+                return ForwardCall(call);
+            }
+        }
+
+        private IMessage HandleObservableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
+        {
+            var actualObservable = ProduceActualObservable(call, method, operatorInfo);
+
+            var ret = CreateOperatorObservable(actualObservable, method.ReturnType.GetGenericArguments()[0], method.ReturnType, operatorInfo);
+            return new ReturnMessage(ret, null, 0, null, call);
+        }
+
+        private IMessage HandleConnectableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
+        {
+            var genericType = method.ReturnType.GetGenericArguments()[0];
+            var actualObservable = ProduceActualObservable(call, method, operatorInfo);
+
+            var connectable = Activator.CreateInstance(
+                typeof(ConnectableOperatorObservable<>).MakeGenericType(genericType),
+                new object[] { _session, actualObservable, operatorInfo }
+            );
+
+            return new ReturnMessage(connectable, null, 0, null, call);
+        }
+
+        private object ProduceActualObservable(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
+        {
+            var args = ReplaceAllObservablesWithConnections(method, call.InArgs, operatorInfo);
+            var actualObservable = call.MethodBase.Invoke(_queryService, args);
+            return actualObservable;
+        }
+
+        private IMessage ForwardCall(IMethodCallMessage call)
+        {
+            return new ReturnMessage(call.MethodBase.Invoke(_queryService, call.InArgs), null, 0, null, call);
+        }
+
+        static readonly string[] _connectableCandidates = new[] { "Multicast", "Publish", "PublishLast", "Replay" };
+        static readonly string[] _blockingCandidates = new[] { "Wait", "First", "FirstOrDefault", "Last", "LastOrDefault", "ForEach", };
+
+        bool IsGenericTypeDefinition(Type source, Type genericTypeComparand)
+        {
+            return source.IsGenericType && source.GetGenericTypeDefinition() == genericTypeComparand;
+        }
+
+        private IMessage HandleRefCount(IMethodCallMessage call, OperatorInfo operatorInfo)
+        {
+            Debug.Assert(call.InArgs.Length == 1);
+
+            var signalType = call.MethodBase.GetGenericArguments()[0];
+
+            var args = new object[] {
+                    Activator.CreateInstance(
+                        typeof(ConnectableOperatorConnection<>).MakeGenericType(signalType),
+                        new object[] { _session, call.InArgs[0], operatorInfo }
+                    )
+                };
+
+            var actualObservable = call.MethodBase.Invoke(_queryService, call.InArgs);
+            var ret = CreateOperatorObservable(actualObservable, signalType, typeof(IObservable<>).MakeGenericType(signalType), operatorInfo);
 
             return new ReturnMessage(ret, null, 0, null, call);
         }
 
-        object[] ReplaceAllObservablesWithConnections(object[] args, OperatorInfo operatorInfo)
+        object[] ReplaceAllObservablesWithConnections(System.Reflection.MethodInfo method, object[] args, OperatorInfo operatorInfo)
         {
-            object[] parameters = new object[args.Length];
+            object[] parameterValues = new object[args.Length];
+            var parameterInfos = method.GetParameters();
 
-            for (int i = 0; i < parameters.Length; i++)
+            for (int i = 0; i < parameterValues.Length; i++)
             {
-                parameters[i] = TryCreateOperatorConnection(args[i], operatorInfo);
-            }
+                var pt = parameterInfos[i].ParameterType;
 
-            return parameters;
-        }
-
-        object TryCreateOperatorConnection(object arg, OperatorInfo operatorInfo)
-        {
-            if (arg == null)
-                return null;
-
-            var argType = arg.GetType();
-
-            if (argType.IsArray)
-            {
-                var elementType = argType.GetElementType();
-
-                if (!IsObservable(elementType))
-                    return arg;
-
-                var argArray = (Array)arg;
-                var newArray = (Array)Activator.CreateInstance(argType, new object[] { argArray.Length });
-
-                for (int i = 0; i < argArray.Length; i++)
+                if (IsGenericTypeDefinition(pt, typeof(IObservable<>)))
                 {
-                    newArray.SetValue(CreateObservableConnection(argArray.GetValue(i), elementType, operatorInfo), i);
+                    var signalType = pt.GetGenericArguments()[0];
+
+                    parameterValues[i] = CreateObservableConnection(args[i], signalType, pt, operatorInfo);
                 }
-
-                return newArray;
-            }
-
-            if (arg is System.Collections.IEnumerable && argType.IsGenericType)
-            {
-                var ifaces = argType.GetInterfaces();
-
-                foreach (var iface in ifaces)
+                else if (pt.IsArray)
                 {
-                    if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                    var signalType = pt.GetElementType();
+                    var argArray = (Array)args[i];
+                    var newArray = (Array)Activator.CreateInstance(signalType, new object[] { argArray.Length });
+
+                    for (int j = 0; j < argArray.Length; j++)
                     {
-                        var elementType = argType.GetGenericArguments()[0];
-
-                        if (!IsObservable(elementType))
-                            return arg;
-
-                        var enumerableConnectionType = typeof(DeferredOperatorConnectionEnumerable<>)
-                            .MakeGenericType(elementType);
-
-                        var enumerable = Activator.CreateInstance(enumerableConnectionType, new object[] { 
-                            arg, 
-                            new Func<object, object>(o => CreateObservableConnection(o, elementType, operatorInfo))
-                        });
-
-                        return enumerable;
+                        newArray.SetValue(CreateObservableConnection(argArray.GetValue(i), signalType, pt, operatorInfo), j);
                     }
                 }
+                else if (IsGenericTypeDefinition(pt, typeof(IEnumerable<>)) &&
+                    IsGenericTypeDefinition(pt.GetGenericArguments()[0], typeof(IObservable<>)))
+                {
+                    var observableType = pt.GetGenericArguments()[0];
+                    var signalType = observableType.GetGenericArguments()[0];
+
+                    var enumerableConnectionType = typeof(DeferredOperatorConnectionEnumerable<>)
+                            .MakeGenericType(observableType);
+
+                    parameterValues[i] = Activator.CreateInstance(
+                        enumerableConnectionType,
+                        new object[] { 
+                            args[i], 
+                            new Func<object, object>(o => CreateObservableConnection(o, signalType, observableType, operatorInfo)) 
+                        });
+                }
+                else
+                {
+                    parameterValues[i] = args[i];
+                }
             }
 
-            if (IsObservable(argType))
-            {
-                return CreateObservableConnection(arg, argType, operatorInfo);
-            }
-
-            return arg;
+            return parameterValues;
         }
 
-        object CreateObservableConnection(object source, Type sourceType, OperatorInfo operatorInfo)
+        object CreateObservableConnection(object source, Type signalType, Type observableType, OperatorInfo operatorInfo)
         {
-            var iface = GetIObserverInterface(sourceType);
+            var operatorObservable = typeof(OperatorConnection<>).MakeGenericType(signalType);
 
-            if (iface == null)
-                return source;
-
-            var operatorObservableType = IsConnectableObservable(sourceType)
-                ? typeof(ConnectableOperatorConnection<>)
-                : typeof(OperatorConnection<>);
-
-            var operatorObservable = operatorObservableType.MakeGenericType(iface.GetGenericArguments());
-
-            var instance = operatorObservable.GetConstructor(new[] { sourceType, typeof(OperatorInfo) })
-                .Invoke(new object[] { source, operatorInfo });
-
-            return instance;
-        }
-
-        object TryCreateOperatorObservable(object source, OperatorInfo operatorInfo)
-        {
-            if (source == null)
-                return source;
-
-            var sourceType = source.GetType();
-
-            var iface = GetIObserverInterface(sourceType);
-
-            if (iface == null)
-                return source;
-
-            var operatorObservableType = IsConnectableObservable(sourceType)
-                ? typeof(ConnectableOperatorObservable<>)
-                : typeof(OperatorObservable<>);
-
-            var operatorObservable = operatorObservableType.MakeGenericType(iface.GetGenericArguments());
-
-            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), sourceType, typeof(OperatorInfo) })
+            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), observableType, typeof(OperatorInfo) })
                 .Invoke(new object[] { _session, source, operatorInfo });
 
             return instance;
         }
 
-        Type GetIObserverInterface(Type t)
+        object CreateOperatorObservable(object source, Type signalType, Type observableType, OperatorInfo operatorInfo)
         {
-            // todo: cache
+            var operatorObservable = typeof(OperatorObservable<>).MakeGenericType(signalType);
 
-            if (t.IsInterface && t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IObservable<>))
-                return t;
+            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), observableType, typeof(OperatorInfo) })
+                .Invoke(new object[] { _session, source, operatorInfo });
 
-            foreach (var iface in t.GetInterfaces())
-            {
-                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IObservable<>))
-                    return iface;
-            }
-
-            return null;
-        }
-
-        bool IsObservable(Type t)
-        {
-            return GetIObserverInterface(t) != null;
-        }
-
-        bool IsConnectableObservable(Type t)
-        {
-            // todo: cache
-
-            if (t.IsInterface && t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IConnectableObservable<>))
-                return true;
-
-            foreach (var iface in t.GetInterfaces())
-            {
-                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IConnectableObservable<>))
-                    return true;
-            }
-
-            return false;
+            return instance;
         }
 
         public bool CanCastTo(Type fromType, object o)
         {
-            return true;
+            return fromType.Name == "IQueryLanguage";
         }
 
         public string TypeName

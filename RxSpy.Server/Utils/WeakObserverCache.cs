@@ -11,7 +11,7 @@ namespace RxSpy.Utils
         readonly LinkedList<Tuple<WeakReference<object>, OperatorInfo>> cache =
             new LinkedList<Tuple<WeakReference<object>, OperatorInfo>>();
 
-        public bool TryGetOrAdd<T>(IObserver<T> observer, out OperatorInfo operatorInfo)
+        public bool TryGetOrAdd(object value, out OperatorInfo operatorInfo)
         {
             // TODO: RWLock
             lock (cache)
@@ -20,7 +20,7 @@ namespace RxSpy.Utils
 
                 if (node == null)
                 {
-                    operatorInfo = Add<T>(observer);
+                    operatorInfo = Add(value);
                     return false;
                 }
 
@@ -48,22 +48,22 @@ namespace RxSpy.Utils
                     cache.Remove(staleNode);
                 }
 
-                operatorInfo = Add(observer);
+                operatorInfo = Add(value);
                 return false;
             }
         }
 
-        OperatorInfo Add<T>(IObserver<T> observer)
+        OperatorInfo Add(object value)
         {
-            var operatorInfo = CreateAnonymousOperatorInfo(observer);
-            cache.AddFirst(Tuple.Create(new WeakReference<object>(observer), operatorInfo));
+            var operatorInfo = CreateAnonymousOperatorInfo(value);
+            cache.AddFirst(Tuple.Create(new WeakReference<object>(value), operatorInfo));
 
             return operatorInfo;
         }
 
-        private OperatorInfo CreateAnonymousOperatorInfo<T>(IObserver<T> observer)
+        private OperatorInfo CreateAnonymousOperatorInfo(object value)
         {
-            return new OperatorInfo(TypeUtils.ToFriendlyName(observer.GetType()));
+            return new OperatorInfo(TypeUtils.ToFriendlyName(value.GetType()));
         }
     }
 }

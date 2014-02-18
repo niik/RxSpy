@@ -149,16 +149,16 @@ namespace RxSpy
             return ev.EventId;
         }
 
-        internal OperatorInfo GetOperatorInfoFor<T>(IObserver<T> observer)
+        internal OperatorInfo GetOperatorInfoFor(object value)
         {
-            var oobs = observer as IOperatorObservable;
+            var oobs = value as IOperatorObservable;
 
             if (oobs != null)
                 return oobs.OperatorInfo;
 
             OperatorInfo operatorInfo;
 
-            if (!_cache.TryGetOrAdd(observer, out operatorInfo))
+            if (!_cache.TryGetOrAdd(value, out operatorInfo))
                 EnqueueEvent(Event.OperatorCreated(operatorInfo));
 
             return operatorInfo;

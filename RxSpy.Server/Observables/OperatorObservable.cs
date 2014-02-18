@@ -1,65 +1,41 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Subjects;
 using RxSpy.Events;
 using RxSpy.Utils;
 
 namespace RxSpy.Observables
 {
-    internal class OperatorObservable<T> : MITMObservable<T>, IOperatorObservable
+    internal class OperatorObservable<T> : IObservable<T>, IOperatorObservable
     {
         readonly OperatorInfo _operatorInfo;
         readonly RxSpySession _session;
+        private IObservable<T> _source;
 
         protected RxSpySession Session { get { return _session; } }
         public OperatorInfo OperatorInfo { get { return _operatorInfo; } }
 
         public OperatorObservable(RxSpySession session, IObservable<T> source, OperatorInfo operatorInfo)
-            : base(source)
         {
             if (source == null)
                 throw new ArgumentNullException("source");
 
-            // This should never happen but it does with Start and tasks and whatnot, investigate
-            // if (source is OperatorObservable<T>)
-                // throw new ArgumentException("Cannot wrap operator observable in another operator observable");
-
+            _source = source;
             _session = session;
             _operatorInfo = operatorInfo;
 
             _session.EnqueueEvent(Event.OperatorCreated(operatorInfo));
         }
 
-        public override void OnNext(T value)
+        public IDisposable Subscribe(IObserver<T> observer)
         {
-            _session.EnqueueEvent(Event.OnNext(_operatorInfo, typeof(T), value));
-            base.OnNext(value);
-        }
+            var oobs = observer as IOperatorObservable;
 
-        public override void OnError(Exception error)
-        {
-            _session.EnqueueEvent(Event.OnError(_operatorInfo, error));
-            base.OnError(error);
-        }
+            if (oobs != null)
+                return _source.Subscribe(observer);
 
-        public override void OnCompleted()
-        {
-            _session.EnqueueEvent(Event.OnCompleted(_operatorInfo));
-            base.OnCompleted();
-        }
-
-        public override IDisposable Subscribe(IObserver<T> observer)
-        {
-            var subscriberOperatorInfo = _session.GetOperatorInfoFor(observer);
-
-            var subscriptionId = _session.EnqueueEvent(Event.Subscribe(subscriberOperatorInfo, OperatorInfo));
-
-            var disp = base.Subscribe(observer);
-
-            return Disposable.Create(() =>
-            {
-                disp.Dispose();
-                _session.EnqueueEvent(Event.Unsubscribe(subscriptionId));
-            });
+            _session.EnqueueEvent(Event.Subscribe(_session.GetOperatorInfoFor(observer), _operatorInfo));
+            return _source.Subscribe(new OperatorObserver<T>(_session, observer, _operatorInfo));
         }
 
         public override string ToString()

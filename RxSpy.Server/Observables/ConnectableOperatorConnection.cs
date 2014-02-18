@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Subjects;
+using RxSpy.Events;
 
 namespace RxSpy.Observables
 {
@@ -7,10 +9,9 @@ namespace RxSpy.Observables
     {
         readonly IConnectableObservable<T> _connectableObservable;
 
-        public ConnectableOperatorConnection(IConnectableObservable<T> source, OperatorInfo operatorInfo)
-            : base(source, operatorInfo)
+        public ConnectableOperatorConnection(RxSpySession session, IConnectableObservable<T> parent, OperatorInfo childInfo)
+            : base(session, parent, childInfo)
         {
-            _connectableObservable = source;
         }
 
         public IDisposable Connect()
