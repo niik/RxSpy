@@ -43,30 +43,34 @@ namespace RxSpy.Proxy
                 return ForwardCall(call);
             }
 
-            var operatorCallSite = new MethodInfo(call.MethodBase);
-            var callSite = new CallSite(new StackTrace(4, true).GetFrames()[0]);
-            var operatorInfo = new OperatorInfo(callSite, operatorCallSite);
-
             // IConnectableObservable parameters
             if (call.MethodName == "RefCount")
             {
-                return HandleRefCount(call, operatorInfo);
+                return HandleRefCount(call, CreateOperatorInfo(call));
             }
 
             // IConnectableObservable return types
             if (Array.IndexOf(_connectableCandidates, call.MethodName) >= 0 &&
                 IsGenericTypeDefinition(method.ReturnType, typeof(IConnectableObservable<>)))
             {
-                return HandleConnectableReturnType(call, method, operatorInfo);
+                return HandleConnectableReturnType(call, method, CreateOperatorInfo(call));
             }
             else if (IsGenericTypeDefinition(method.ReturnType, typeof(IObservable<>)))
             {
-                return HandleObservableReturnType(call, method, operatorInfo);
+                return HandleObservableReturnType(call, method, CreateOperatorInfo(call));
             }
             else
             {
                 return ForwardCall(call);
             }
+        }
+
+        private static OperatorInfo CreateOperatorInfo(IMethodCallMessage call)
+        {
+            var operatorCallSite = new MethodInfo(call.MethodBase);
+            var callSite = new CallSite(new StackTrace(5, true).GetFrames()[0]);
+            var operatorInfo = new OperatorInfo(callSite, operatorCallSite);
+            return operatorInfo;
         }
 
         private IMessage HandleObservableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
