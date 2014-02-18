@@ -69,7 +69,7 @@ namespace RxSpy.Proxy
         private static OperatorInfo CreateOperatorInfo(IMethodCallMessage call)
         {
             var operatorCallSite = new MethodInfo(call.MethodBase);
-            var callSite = new CallSite(new StackTrace(5, true).GetFrames()[0]);
+            var callSite = new CallSite(new StackFrame(5, true));
             var operatorInfo = new OperatorInfo(callSite, operatorCallSite);
             return operatorInfo;
         }
