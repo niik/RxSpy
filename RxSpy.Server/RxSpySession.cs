@@ -61,6 +61,21 @@ namespace RxSpy
             InstallInterceptingQueryLanguage(session);
         }
 
+        public static void LogToFile(string path)
+        {
+            var server = new RxSpyFileWriter(path);
+
+            server.WaitForConnection(TimeSpan.Zero);
+            var session = new RxSpySession(server);
+
+            Current = session;
+
+            if (Interlocked.CompareExchange(ref _launched, 1, 0) != 0)
+                throw new InvalidOperationException("Session already created");
+
+            InstallInterceptingQueryLanguage(session);
+        }
+
         static IRxSpyServer CreateServer()
         {
             return new RxSpyHttpServer();

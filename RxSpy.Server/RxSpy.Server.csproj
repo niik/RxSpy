@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Communication\IRxSpyServer.cs" />
+    <Compile Include="Communication\RxSpyFileWriter.cs" />
     <Compile Include="Communication\RxSpyHttpServer.cs" />
     <Compile Include="Communication\Serialization\RxSpyJsonSerializerStrategy.cs" />
     <Compile Include="Events\Event.cs" />
