@@ -151,12 +151,20 @@ namespace RxSpy.Proxy
                 else if (pt.IsArray)
                 {
                     var signalType = pt.GetElementType();
-                    var argArray = (Array)args[i];
-                    var newArray = (Array)Activator.CreateInstance(signalType, new object[] { argArray.Length });
 
-                    for (int j = 0; j < argArray.Length; j++)
+                    if (IsGenericTypeDefinition(signalType, typeof(IObservable<>)))
                     {
-                        newArray.SetValue(CreateObservableConnection(argArray.GetValue(i), signalType, pt, operatorInfo), j);
+                        var argArray = (Array)args[i];
+                        var newArray = (Array)Activator.CreateInstance(signalType, new object[] { argArray.Length });
+
+                        for (int j = 0; j < argArray.Length; j++)
+                        {
+                            newArray.SetValue(CreateObservableConnection(argArray.GetValue(i), signalType, pt, operatorInfo), j);
+                        }
+                    }
+                    else
+                    {
+                        parameterValues[i] = args[i];
                     }
                 }
                 else if (IsGenericTypeDefinition(pt, typeof(IEnumerable<>)) &&
