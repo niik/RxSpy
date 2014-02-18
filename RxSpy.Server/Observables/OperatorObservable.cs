@@ -10,17 +10,17 @@ namespace RxSpy.Observables
     {
         readonly OperatorInfo _operatorInfo;
         readonly RxSpySession _session;
-        private IObservable<T> _source;
+        private IObservable<T> _inner;
 
         protected RxSpySession Session { get { return _session; } }
         public OperatorInfo OperatorInfo { get { return _operatorInfo; } }
 
-        public OperatorObservable(RxSpySession session, IObservable<T> source, OperatorInfo operatorInfo)
+        public OperatorObservable(RxSpySession session, IObservable<T> inner, OperatorInfo operatorInfo)
         {
-            if (source == null)
+            if (inner == null)
                 throw new ArgumentNullException("source");
 
-            _source = source;
+            _inner = inner;
             _session = session;
             _operatorInfo = operatorInfo;
 
@@ -32,10 +32,10 @@ namespace RxSpy.Observables
             var oobs = observer as IOperatorObservable;
 
             if (oobs != null)
-                return _source.Subscribe(observer);
+                return _inner.Subscribe(observer);
 
             _session.EnqueueEvent(Event.Subscribe(_session.GetOperatorInfoFor(observer), _operatorInfo));
-            return _source.Subscribe(new OperatorObserver<T>(_session, observer, _operatorInfo));
+            return _inner.Subscribe(new OperatorObserver<T>(_session, observer, _operatorInfo));
         }
 
         public override string ToString()
