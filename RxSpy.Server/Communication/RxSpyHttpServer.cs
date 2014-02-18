@@ -112,8 +112,10 @@ namespace RxSpy.Communication
                     {
                         try
                         {
-                            var ev = await _queue.ReceiveAsync();
-                            await sw.WriteLineAsync(SimpleJson.SerializeObject(ev, _serializerStrategy));
+                            var ev = await _queue.ReceiveAsync(ct);
+
+                            if (!ct.IsCancellationRequested)
+                                await sw.WriteLineAsync(SimpleJson.SerializeObject(ev, _serializerStrategy));
                         }
                         catch (Exception e)
                         {
