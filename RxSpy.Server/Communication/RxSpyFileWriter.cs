@@ -39,8 +39,10 @@ namespace RxSpy.Communication
 
         async Task RunQueue(CancellationToken ct)
         {
-            using (var sw = new StreamWriter(File.OpenWrite(_path)))
+            using (var sw = new StreamWriter(_path, append: false))
             {
+                sw.AutoFlush = true;
+
                 while (!ct.IsCancellationRequested)
                 {
                     try
