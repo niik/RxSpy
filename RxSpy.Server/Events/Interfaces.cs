@@ -80,4 +80,14 @@ namespace RxSpy.Events
         string Tag { get; }
         long OperatorId { get; }
     }
+
+    public interface IConnectedEvent : IEvent
+    {
+        long OperatorId { get; }
+    }
+
+    public interface IDisconnectedEvent : IEvent
+    {
+        long ConnectionId { get; }
+    }
 }

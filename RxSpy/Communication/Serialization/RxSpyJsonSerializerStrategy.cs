@@ -35,6 +35,8 @@ namespace RxSpy.Communication.Serialization
                     case EventType.OnError: return base.DeserializeObject(value, typeof(OnErrorEvent));
                     case EventType.OnCompleted: return base.DeserializeObject(value, typeof(OnCompletedEvent));
                     case EventType.TagOperator: return base.DeserializeObject(value, typeof(TagOperatorEvent));
+                    case EventType.Connected: return base.DeserializeObject(value, typeof(ConnectedEvent));
+                    case EventType.Disconnected: return base.DeserializeObject(value, typeof(DisconnectedEvent));
                     default: throw new NotImplementedException();
                 }
             }

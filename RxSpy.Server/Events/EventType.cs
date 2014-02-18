@@ -17,6 +17,9 @@ namespace RxSpy.Events
         OnError,
         OnCompleted,
 
-        TagOperator
+        TagOperator,
+
+        Connected,
+        Disconnected
     }
 }

@@ -10,6 +10,7 @@ namespace RxSpy.Observables
         readonly OperatorInfo _operatorInfo;
         readonly RxSpySession _session;
 
+        protected RxSpySession Session { get { return _session; } }
         public OperatorInfo OperatorInfo { get { return _operatorInfo; } }
 
         public OperatorObservable(RxSpySession session, IObservable<T> source, OperatorInfo operatorInfo)

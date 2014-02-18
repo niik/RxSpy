@@ -58,6 +58,8 @@
     <Compile Include="Communication\RxSpyFileWriter.cs" />
     <Compile Include="Communication\RxSpyHttpServer.cs" />
     <Compile Include="Communication\Serialization\RxSpyJsonSerializerStrategy.cs" />
+    <Compile Include="Events\ConnectedEvent.cs" />
+    <Compile Include="Events\DisconnectedEvent.cs" />
     <Compile Include="Events\Event.cs" />
     <Compile Include="Events\EventType.cs" />
     <Compile Include="Events\Interfaces.cs" />

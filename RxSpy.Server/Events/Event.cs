@@ -62,5 +62,15 @@ namespace RxSpy.Events
         {
             return new TagOperatorEvent(operatorInfo, tag);
         }
+
+        internal static Event Connect(OperatorInfo operatorInfo)
+        {
+            return new ConnectedEvent(operatorInfo);
+        }
+
+        internal static Event Disconnect(long connectionId)
+        {
+            return new DisconnectedEvent(connectionId);
+        }
     }
 }

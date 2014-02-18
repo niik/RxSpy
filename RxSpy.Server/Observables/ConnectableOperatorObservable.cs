@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 using System.Reactive.Subjects;
+using RxSpy.Events;
 
 namespace RxSpy.Observables
 {
@@ -17,7 +19,14 @@ namespace RxSpy.Observables
 
         public IDisposable Connect()
         {
-            return _connectableObservable.Connect();
+            var connectEvent = Event.Connect(OperatorInfo);
+            Session.EnqueueEvent(connectEvent);
+            var disp = _connectableObservable.Connect();
+
+            return Disposable.Create(() => {
+                disp.Dispose();
+                Session.EnqueueEvent(Event.Disconnect(connectEvent.EventId));
+            });
         }
     }
 }

@@ -121,6 +121,8 @@
       <DependentUpon>GraphWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\Events\CallSite.cs" />
+    <Compile Include="Models\Events\ConnectedEvent.cs" />
+    <Compile Include="Models\Events\DisconnectedEvent.cs" />
     <Compile Include="Models\Events\Event.cs" />
     <Compile Include="Models\Events\MethodInfo.cs" />
     <Compile Include="Models\Events\OnCompletedEvent.cs" />
