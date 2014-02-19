@@ -74,6 +74,17 @@ namespace RxSpy
         public void Dispose()
         {
             GC.SuppressFinalize(this);
+            IEvent ev;
+
+            // Wait for up to half a second for the queue to clear
+            for (int i = 0; i < 50; i++)
+            {
+                if (!_queue.TryPeek(out ev))
+                    break;
+
+                Thread.Sleep(10);
+            }
+
             _cancellationTokenSource.Cancel();
         }
 

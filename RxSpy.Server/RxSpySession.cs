@@ -14,7 +14,7 @@ using RxSpy.Utils;
 
 namespace RxSpy
 {
-    public class RxSpySession: IRxSpyEventHandler
+    public class RxSpySession: IRxSpyEventHandler, IDisposable
     {
         static int _launched = 0;
         readonly WeakObserverCache _cache = new WeakObserverCache();
@@ -27,12 +27,12 @@ namespace RxSpy
             _eventHandler = eventHandler;
         }
 
-        public static void Launch(string pathToRxSpy = null)
+        public static RxSpySession Launch(string pathToRxSpy = null)
         {
-            Launch(TimeSpan.FromHours(5), pathToRxSpy);
+            return Launch(TimeSpan.FromHours(5), pathToRxSpy);
         }
 
-        public static void Launch(TimeSpan timeout, string pathToRxSpy = null)
+        public static RxSpySession Launch(TimeSpan timeout, string pathToRxSpy = null)
         {
             if (_launched == 1)
                 throw new InvalidOperationException("Session already created");
@@ -52,10 +52,10 @@ namespace RxSpy
             Process.Start(psi);
             server.WaitForConnection(timeout);
 
-            Launch(server);
+            return Launch(server);
         }
 
-        public static void Launch(IRxSpyEventHandler eventHandler)
+        public static RxSpySession Launch(IRxSpyEventHandler eventHandler)
         {
             var session = new RxSpySession(eventHandler);
             Current = session;
@@ -64,6 +64,8 @@ namespace RxSpy
                 throw new InvalidOperationException("Session already created");
 
             InstallInterceptingQueryLanguage(session);
+
+            return session;
         }
 
         static string FindGuiPath(string explicitPathToRxSpy)
