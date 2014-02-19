@@ -15,7 +15,7 @@ namespace RxSpy.Communication
     // I feel the need to appologize for the messy TPL code in here. This would have been so
     // clean if I could only use Rx but obviously I can't since I replaced the entire 
     // Rx implementation and it would only add noise to the receiving clients.
-    internal sealed class RxSpyHttpServer : IRxSpyServer
+    internal sealed class RxSpyHttpServer : IRxSpyServer, IRxSpyEventHandler
     {
         readonly HttpListener _server;
         readonly Task _serverTask;
@@ -27,7 +27,7 @@ namespace RxSpy.Communication
 
         public Uri Address { get; private set; }
 
-        readonly BufferBlock<Event> _queue = new BufferBlock<Event>();
+        readonly BufferBlock<IEvent> _queue = new BufferBlock<IEvent>();
 
         public RxSpyHttpServer()
         {
@@ -54,7 +54,7 @@ namespace RxSpy.Communication
                 throw new TimeoutException("No connection received");
         }
 
-        public void EnqueueEvent(Event ev)
+        public void EnqueueEvent(IEvent ev)
         {
             if (_hasConnection)
                 _queue.Post(ev);
@@ -146,10 +146,55 @@ namespace RxSpy.Communication
             }
         }
 
+        public void OnCreated(IOperatorCreatedEvent onCreatedEvent)
+        {
+            EnqueueEvent(onCreatedEvent);
+        }
+
+        public void OnCompleted(IOnCompletedEvent onCompletedEvent)
+        {
+            EnqueueEvent(onCompletedEvent);
+        }
+
+        public void OnError(IOnErrorEvent onErrorEvent)
+        {
+            EnqueueEvent(onErrorEvent);
+        }
+
+        public void OnNext(IOnNextEvent onNextEvent)
+        {
+            EnqueueEvent(onNextEvent);
+        }
+
+        public void OnSubscribe(ISubscribeEvent subscribeEvent)
+        {
+            EnqueueEvent(subscribeEvent);
+        }
+
+        public void OnUnsubscribe(IUnsubscribeEvent unsubscribeEvent)
+        {
+            EnqueueEvent(unsubscribeEvent);
+        }
+
+        public void OnConnected(IConnectedEvent connectedEvent)
+        {
+            EnqueueEvent(connectedEvent);
+        }
+
+        public void OnDisconnected(IDisconnectedEvent disconnectedEvent)
+        {
+            EnqueueEvent(disconnectedEvent);
+        }
+
+        public void OnTag(ITagOperatorEvent tagEvent)
+        {
+            EnqueueEvent(tagEvent);
+        }
+
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
             _cancellationTokenSource.Cancel();
+            GC.SuppressFinalize(this);
         }
     }
 }

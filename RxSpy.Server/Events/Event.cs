@@ -33,42 +33,42 @@ namespace RxSpy.Events
             return new OperatorCreatedEvent(operatorInfo);
         }
 
-        public static Event OnNext(OperatorInfo operatorInfo, Type type, object value)
+        public static OnNextEvent OnNext(OperatorInfo operatorInfo, Type type, object value)
         {
             return new OnNextEvent(operatorInfo, type, value, Thread.CurrentThread.ManagedThreadId);
         }
 
-        public static Event OnError(OperatorInfo operatorInfo, Exception error)
+        public static OnErrorEvent OnError(OperatorInfo operatorInfo, Exception error)
         {
             return new OnErrorEvent(operatorInfo, error);
         }
 
-        public static Event OnCompleted(OperatorInfo operatorInfo)
+        public static OnCompletedEvent OnCompleted(OperatorInfo operatorInfo)
         {
             return new OnCompletedEvent(operatorInfo);
         }
 
-        internal static Event Subscribe(OperatorInfo child, OperatorInfo parent)
+        internal static SubscribeEvent Subscribe(OperatorInfo child, OperatorInfo parent)
         {
             return new SubscribeEvent(child, parent);
         }
 
-        internal static Event Unsubscribe(long subscriptionId)
+        internal static UnsubscribeEvent Unsubscribe(long subscriptionId)
         {
             return new UnsubscribeEvent(subscriptionId);
         }
 
-        internal static Event Tag(OperatorInfo operatorInfo, string tag)
+        internal static TagOperatorEvent Tag(OperatorInfo operatorInfo, string tag)
         {
             return new TagOperatorEvent(operatorInfo, tag);
         }
 
-        internal static Event Connect(OperatorInfo operatorInfo)
+        internal static ConnectedEvent Connect(OperatorInfo operatorInfo)
         {
             return new ConnectedEvent(operatorInfo);
         }
 
-        internal static Event Disconnect(long connectionId)
+        internal static DisconnectedEvent Disconnect(long connectionId)
         {
             return new DisconnectedEvent(connectionId);
         }

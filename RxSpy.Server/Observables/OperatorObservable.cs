@@ -47,7 +47,7 @@ namespace RxSpy.Observables
             public void OnCompleted()
             {
                 if (isReporting())
-                    _parent._session.EnqueueEvent(Event.OnCompleted(_parent._operatorInfo));
+                    _parent._session.OnCompleted(Event.OnCompleted(_parent._operatorInfo));
 
                 _inner.OnCompleted();
             }
@@ -55,7 +55,7 @@ namespace RxSpy.Observables
             public void OnError(Exception error)
             {
                 if (isReporting())
-                    _parent._session.EnqueueEvent(Event.OnError(_parent._operatorInfo, error));
+                    _parent._session.OnError(Event.OnError(_parent._operatorInfo, error));
                 
                 _inner.OnError(error);
             }
@@ -63,7 +63,7 @@ namespace RxSpy.Observables
             public void OnNext(T value)
             {
                 if (isReporting())
-                    _parent._session.EnqueueEvent(Event.OnNext(_parent._operatorInfo, typeof(T), value));
+                    _parent._session.OnNext(Event.OnNext(_parent._operatorInfo, typeof(T), value));
 
                 _inner.OnNext(value);
             }
@@ -87,7 +87,7 @@ namespace RxSpy.Observables
             _session = session;
             _operatorInfo = operatorInfo;
 
-            _session.EnqueueEvent(Event.OperatorCreated(operatorInfo));
+            _session.OnCreated(Event.OperatorCreated(operatorInfo));
         }
 
         public IDisposable Subscribe(IObserver<T> observer)
@@ -105,7 +105,7 @@ namespace RxSpy.Observables
 
         internal void Tag(string tag)
         {
-            _session.EnqueueEvent(Event.Tag(_operatorInfo, tag));
+            _session.OnTag(Event.Tag(_operatorInfo, tag));
         }
     }
 }
