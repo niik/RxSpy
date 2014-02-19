@@ -66,13 +66,6 @@ namespace RxSpy
             InstallInterceptingQueryLanguage(session);
         }
 
-        public static void LogToFile(string path)
-        {
-            var handler = new RxSpyStreamWriter(path);
-
-            Launch(handler);
-        }
-
         static string FindGuiPath(string explicitPathToRxSpy)
         {
             // Try a few different things attempting to find RxSpy.exe, depending
