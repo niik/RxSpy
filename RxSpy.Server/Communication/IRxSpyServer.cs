@@ -12,6 +12,6 @@ namespace RxSpy.Communication
         Uri Address { get; }
 
         void WaitForConnection(TimeSpan timeout);
-        void EnqueueEvent(Event ev);
+        void EnqueueEvent(IEvent ev);
     }
 }

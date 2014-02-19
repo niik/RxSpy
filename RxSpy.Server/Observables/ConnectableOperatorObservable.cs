@@ -18,13 +18,13 @@ namespace RxSpy.Observables
 
         public IDisposable Connect()
         {
-            var connectionId = Session.EnqueueEvent(Event.Connect(OperatorInfo));
+            var connectionId = Session.OnConnected(OperatorInfo);
             var disp = _connectableObservable.Connect();
 
             return Disposable.Create(() =>
             {
                 disp.Dispose();
-                Session.EnqueueEvent(Event.Disconnect(connectionId));
+                Session.OnDisconnected(Event.Disconnect(connectionId));
             });
         }
     }

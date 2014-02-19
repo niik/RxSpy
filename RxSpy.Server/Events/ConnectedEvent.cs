@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RxSpy.Events
 {
-    internal class ConnectedEvent : Event
+    internal class ConnectedEvent : Event, IConnectedEvent
     {
         public long OperatorId { get; set; }
 

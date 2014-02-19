@@ -29,14 +29,14 @@ namespace RxSpy.Observables
 
         public virtual IDisposable Subscribe(IObserver<T> observer)
         {
-            var subscriptionId = _session.EnqueueEvent(Event.Subscribe(_childInfo, _parentInfo));
+            var subscriptionId = _session.OnSubscribe(_childInfo, _parentInfo);
 
             var disp = _parent.Subscribe(observer);
 
             return Disposable.Create(() =>
             {
                 disp.Dispose();
-                _session.EnqueueEvent(Event.Unsubscribe(subscriptionId));
+                _session.OnUnsubscribe(subscriptionId);
             });
         }
     }
