@@ -34,6 +34,9 @@ namespace RxSpy
         {
             _stream = stream;
             _serializerStrategy = new RxSpyJsonSerializerStrategy();
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            Task.Factory.StartNew(() => RunQueue(_cancellationTokenSource.Token), TaskCreationOptions.LongRunning);
         }
 
         async Task RunQueue(CancellationToken ct)
@@ -59,7 +62,7 @@ namespace RxSpy
         {
             if (_path != null)
                 return new StreamWriter(_path, append: false, encoding: Encoding.UTF8);
-            
+
             return new StreamWriter(_stream, Encoding.UTF8, 1024, leaveOpen: true);
         }
 
