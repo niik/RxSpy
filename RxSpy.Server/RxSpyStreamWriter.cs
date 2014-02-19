@@ -25,19 +25,15 @@ namespace RxSpy
         {
             _path = path;
             _serializerStrategy = new RxSpyJsonSerializerStrategy();
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            Task.Factory.StartNew(() => RunQueue(_cancellationTokenSource.Token), TaskCreationOptions.LongRunning);
         }
 
         public RxSpyStreamWriter(Stream stream)
         {
             _stream = stream;
             _serializerStrategy = new RxSpyJsonSerializerStrategy();
-        }
-
-        public void WaitForConnection(TimeSpan timeout)
-        {
-            _cancellationTokenSource = new CancellationTokenSource();
-
-            Task.Factory.StartNew(() => RunQueue(_cancellationTokenSource.Token), TaskCreationOptions.LongRunning);
         }
 
         async Task RunQueue(CancellationToken ct)
