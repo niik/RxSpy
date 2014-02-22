@@ -95,12 +95,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\RxSpy.HttpTest\RxSpy.HttpTest.csproj">
-      <Project>{88dd4f4a-3fe9-4feb-a5dc-d7daf52f8ad2}</Project>
-      <Name>RxSpy.HttpTest</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

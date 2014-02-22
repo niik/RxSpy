@@ -63,10 +63,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RxSpy.HttpTest\RxSpy.HttpTest.csproj">
-      <Project>{88dd4f4a-3fe9-4feb-a5dc-d7daf52f8ad2}</Project>
-      <Name>RxSpy.HttpTest</Name>
-    </ProjectReference>
     <ProjectReference Include="..\RxSpy.Server\RxSpy.Server.csproj">
       <Project>{ad01307e-2429-482a-9f7a-a8aa147bcfda}</Project>
       <Name>RxSpy.Server</Name>
