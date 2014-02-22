@@ -66,31 +66,39 @@ namespace RxSpy.Utils
 
             try
             {
-                int count = 0;
+                int lastCharacterPosition = 0;
 
-                var substitionFuncs = new List<Func<object, object>>();
+                var subs = new List<Tuple<int, Func<object, string>>>();
+                var parts = new List<string>();
 
-                string newFormat = DebuggerDisplayPropertyRe.Replace(format, m =>
+                var matches = DebuggerDisplayPropertyRe.Matches(format);
+                
+                foreach(Match m in matches)
                 {
-                    int p = count++;
+                    if (lastCharacterPosition != m.Index)
+                    {
+                        parts.Add(format.Substring(lastCharacterPosition, m.Index - lastCharacterPosition));
+                        lastCharacterPosition = m.Index + m.Length;
+                    }
 
                     var propertyName = m.Groups[1].Value;
-                    //var propertyValue = GetValueForFieldOrProperty(propertyName, value, type);
 
-                    substitionFuncs.Add(CreatePropertyValueDelegate(type, propertyName));
-                    if (!m.Groups[2].Success)
-                    {
-                        return "\"{" + p + "}\"";
-                    }
-                    else
-                    {
-                        return "{" + p + "}";
-                    }
-                });
+                    var sub = CreatePropertyValueDelegate(type, propertyName, !m.Groups[2].Success);
+                    subs.Add(Tuple.Create(parts.Count, sub));
+                    parts.Add(null);
+                }
+
+                if (lastCharacterPosition != format.Length)
+                    parts.Add(format.Substring(lastCharacterPosition));
 
                 return o =>
                 {
-                    return string.Format(newFormat, substitionFuncs.Select(x => x(o)).ToArray());
+                    var combine = parts.ToArray();
+
+                    foreach (var sub in subs)
+                        combine[sub.Item1] = sub.Item2(o);
+
+                    return string.Concat(combine);
                 };
             }
             catch (Exception exc)
@@ -99,20 +107,20 @@ namespace RxSpy.Utils
             }
         }
 
-        static Func<object, object> CreatePropertyValueDelegate(Type type, string propertyName)
+        static Func<object, string> CreatePropertyValueDelegate(Type type, string propertyName, bool quote)
         {
             var propertyInfo = type.GetProperty(propertyName);
 
             if (propertyInfo != null)
             {
-                return o => propertyInfo.GetValue(o) ?? "null";
+                return o => Convert.ToString(propertyInfo.GetValue(o) ?? "null");
             }
 
             var fieldInfo = type.GetField(propertyName);
 
             if (fieldInfo != null)
             {
-                return o => fieldInfo.GetValue(o) ?? "null";
+                return o => Convert.ToString(fieldInfo.GetValue(o) ?? "null");
             }
 
             return o => "No such property or field " + propertyName;
