@@ -19,13 +19,7 @@ namespace RxSpy.Events
         {
             OperatorId = operatorInfo.Id;
             ValueType = TypeUtils.ToFriendlyName(valueType);
-            Value = GetValueRepresentation(value);
+            Value = ValueFormatter.ToString(value, valueType);
         }
-
-        string GetValueRepresentation(object value)
-        {
-            return ValueFormatter.ToString(value);
-        }
-
     }
 }
