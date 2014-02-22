@@ -86,6 +86,7 @@
     <Compile Include="Proxy\QueryServiceProxy.cs" />
     <Compile Include="RxSpySession.cs" />
     <Compile Include="SimpleJson.cs" />
+    <Compile Include="Utils\DebuggerDisplayFormatter.cs" />
     <Compile Include="Utils\Monotonic.cs" />
     <Compile Include="Utils\RxSpyGroup.cs" />
     <Compile Include="Utils\TypeUtils.cs" />
