@@ -68,7 +68,7 @@ namespace RxSpy.Proxy
             // IConnectableObservable parameters
             if (call.MethodName == "RefCount")
             {
-                return c => HandleRefCount(c, CreateOperatorInfo(c));
+                return CreateRefCountHandler(call);
             }
 
             // IConnectableObservable return types
@@ -134,18 +134,26 @@ namespace RxSpy.Proxy
             return source.IsGenericType && source.GetGenericTypeDefinition() == genericTypeComparand;
         }
 
-        private IMethodReturnMessage HandleRefCount(IMethodCallMessage call, OperatorInfo operatorInfo)
+        Func<IMethodCallMessage, IMethodReturnMessage> CreateRefCountHandler(IMethodCallMessage call)
         {
+            var signalType = call.MethodBase.GetGenericArguments()[0];
+            var connectableOperatorConnectionType = typeof(ConnectableOperatorConnection<>).MakeGenericType(signalType);
+
+            return c => HandleRefCount(c, connectableOperatorConnectionType, signalType);
+        }
+
+        IMethodReturnMessage HandleRefCount(IMethodCallMessage call, Type connectableOperatorConnectionType, Type signalType)
+        {
+            var operatorInfo = CreateOperatorInfo(call);
+
             Debug.Assert(call.InArgs.Length == 1);
 
-            var signalType = call.MethodBase.GetGenericArguments()[0];
-
             var args = new object[] {
-                    Activator.CreateInstance(
-                        typeof(ConnectableOperatorConnection<>).MakeGenericType(signalType),
-                        new object[] { _session, call.InArgs[0], operatorInfo }
-                    )
-                };
+                Activator.CreateInstance(
+                    connectableOperatorConnectionType,
+                    new object[] { _session, call.InArgs[0], operatorInfo }
+                )
+            };
 
             var actualObservable = call.MethodBase.Invoke(_queryService, call.InArgs);
             var ret = CreateOperatorObservable(actualObservable, signalType, operatorInfo);
