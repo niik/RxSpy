@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reactive;
@@ -6,6 +7,7 @@ using System.Reactive.Subjects;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
+using System.Threading;
 using RxSpy.Events;
 using RxSpy.Observables;
 
@@ -13,6 +15,9 @@ namespace RxSpy.Proxy
 {
     internal class QueryLanguageProxy : RealProxy, IRemotingTypeInfo
     {
+        readonly static ConcurrentDictionary<System.Reflection.MethodInfo, Lazy<Func<IMethodCallMessage, IMethodReturnMessage>>> _methodHandlerCache =
+            new ConcurrentDictionary<System.Reflection.MethodInfo, Lazy<Func<IMethodCallMessage, IMethodReturnMessage>>>();
+
         readonly object _queryService;
         readonly Type _queryServiceType;
         readonly RxSpySession _session;
@@ -30,40 +35,54 @@ namespace RxSpy.Proxy
             var call = msg as IMethodCallMessage;
 
             if (call == null)
-                throw new NotImplementedException();
-
-            var method = (System.Reflection.MethodInfo)call.MethodBase;
+                throw new ArgumentException("QueryLanguageProxy only supports call messages");
 
             if (RxSpyGroup.IsActive)
             {
                 return ForwardCall(call);
             }
 
+            var method = (System.Reflection.MethodInfo)call.MethodBase;
+            var handler = GetHandler(call, method);
+
+            return handler(call);
+        }
+
+        private Func<IMethodCallMessage, IMethodReturnMessage> GetHandler(IMethodCallMessage call, System.Reflection.MethodInfo method)
+        {
+            var handler = _methodHandlerCache.GetOrAdd(
+                method, 
+                _ => new Lazy<Func<IMethodCallMessage, IMethodReturnMessage>> (
+                    () => CreateHandler(call, method), LazyThreadSafetyMode.ExecutionAndPublication));
+
+            return handler.Value;
+        }
+
+        Func<IMethodCallMessage, IMethodReturnMessage> CreateHandler(IMethodCallMessage call, System.Reflection.MethodInfo method)
+        {
             if (call.MethodName == "GetAwaiter")
             {
-                return ForwardCall(call);
+                return ForwardCall;
             }
 
             // IConnectableObservable parameters
             if (call.MethodName == "RefCount")
             {
-                return HandleRefCount(call, CreateOperatorInfo(call));
+                return c => HandleRefCount(c, CreateOperatorInfo(c));
             }
 
             // IConnectableObservable return types
             if (Array.IndexOf(_connectableCandidates, call.MethodName) >= 0 &&
                 IsGenericTypeDefinition(method.ReturnType, typeof(IConnectableObservable<>)))
             {
-                return HandleConnectableReturnType(call, method, CreateOperatorInfo(call));
+                return c => HandleConnectableReturnType(c, method, CreateOperatorInfo(call));
             }
             else if (IsGenericTypeDefinition(method.ReturnType, typeof(IObservable<>)))
             {
-                return HandleObservableReturnType(call, method, CreateOperatorInfo(call));
+                return c => HandleObservableReturnType(c, method, CreateOperatorInfo(call));
             }
-            else
-            {
-                return ForwardCall(call);
-            }
+             
+            return ForwardCall;
         }
 
         private static OperatorInfo CreateOperatorInfo(IMethodCallMessage call)
@@ -74,7 +93,7 @@ namespace RxSpy.Proxy
             return operatorInfo;
         }
 
-        private IMessage HandleObservableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
+        private IMethodReturnMessage HandleObservableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
         {
             var actualObservable = ProduceActualObservable(call, method, operatorInfo);
 
@@ -82,7 +101,7 @@ namespace RxSpy.Proxy
             return new ReturnMessage(ret, null, 0, null, call);
         }
 
-        private IMessage HandleConnectableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
+        private IMethodReturnMessage HandleConnectableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
         {
             var genericType = method.ReturnType.GetGenericArguments()[0];
             var actualObservable = ProduceActualObservable(call, method, operatorInfo);
@@ -102,7 +121,7 @@ namespace RxSpy.Proxy
             return actualObservable;
         }
 
-        private IMessage ForwardCall(IMethodCallMessage call)
+        private IMethodReturnMessage ForwardCall(IMethodCallMessage call)
         {
             return new ReturnMessage(call.MethodBase.Invoke(_queryService, call.InArgs), null, 0, null, call);
         }
@@ -115,7 +134,7 @@ namespace RxSpy.Proxy
             return source.IsGenericType && source.GetGenericTypeDefinition() == genericTypeComparand;
         }
 
-        private IMessage HandleRefCount(IMethodCallMessage call, OperatorInfo operatorInfo)
+        private IMethodReturnMessage HandleRefCount(IMethodCallMessage call, OperatorInfo operatorInfo)
         {
             Debug.Assert(call.InArgs.Length == 1);
 
