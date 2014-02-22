@@ -15,6 +15,9 @@ namespace RxSpy.Utils
         readonly static ConcurrentDictionary<Type, Lazy<Func<object, OperatorInfo, object>>> _connectionFactoryCache =
             new ConcurrentDictionary<Type, Lazy<Func<object, OperatorInfo, object>>>();
 
+        readonly static ConcurrentDictionary<Type, Lazy<ConstructorInfo>> _connectionConstructorCache =
+            new ConcurrentDictionary<Type, Lazy<ConstructorInfo>>();
+
         public static bool TryCreateConnection(Type type, object value, OperatorInfo operatorInfo, out object connectionObject)
         {
             var factory = _connectionFactoryCache.GetOrAdd(
@@ -94,12 +97,18 @@ namespace RxSpy.Utils
             if (!(source is IOperatorObservable))
                 return source;
 
+            var ctor = _connectionConstructorCache.GetOrAdd(
+                signalType, 
+                _ => new Lazy<ConstructorInfo>(() => GetConnectionConstructor(signalType)));
+
+            return ctor.Value.Invoke(new object[] { RxSpySession.Current, source, operatorInfo });
+        }
+
+        static ConstructorInfo GetConnectionConstructor(Type signalType)
+        {
             var operatorObservable = typeof(OperatorConnection<>).MakeGenericType(signalType);
 
-            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) })
-                .Invoke(new object[] { RxSpySession.Current, source, operatorInfo });
-
-            return instance;
+            return operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) });
         }
 
         static bool IsGenericTypeDefinition(Type source, Type genericTypeComparand)
