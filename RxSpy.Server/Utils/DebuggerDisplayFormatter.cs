@@ -17,15 +17,29 @@ namespace RxSpy.Utils
 
         public static bool TryFormat(Type type, object target, out string value)
         {
-            var formatter = _cachedFormatters.GetOrAdd(type, CreateFormatter);
+            Func<object, string> formatter;
 
-            if (formatter == null)
+            if (!TryGetDebuggerDisplayFormatter(type, out formatter))
             {
                 value = null;
                 return false;
             }
 
-            value = formatter.Value(target);
+            value = formatter(target);
+            return true;
+        }
+
+        public static bool TryGetDebuggerDisplayFormatter(Type type, out Func<object, string> formatter)
+        {
+            var cacheEntry = _cachedFormatters.GetOrAdd(type, CreateFormatter);
+
+            if (cacheEntry == null)
+            {
+                formatter = null;
+                return false;
+            }
+
+            formatter = cacheEntry.Value;
             return true;
         }
 
@@ -101,7 +115,7 @@ namespace RxSpy.Utils
                 return o => fieldInfo.GetValue(o) ?? "null";
             }
 
-            return o => "No such property or field " + propertyName; 
+            return o => "No such property or field " + propertyName;
         }
     }
 }

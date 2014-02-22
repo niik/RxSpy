@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,6 +12,9 @@ namespace RxSpy.Utils
 {
     public static class ValueFormatter
     {
+        readonly static ConcurrentDictionary<Type, Lazy<Func<object, string>>> _cachedFormatters =
+            new ConcurrentDictionary<Type, Lazy<Func<object, string>>>();
+
         public static string ToString(object value)
         {
             if (value == null)
@@ -19,47 +23,75 @@ namespace RxSpy.Utils
             return ToString(value, value.GetType());
         }
 
-        public static string ToString(object value, Type valueType)
+        public static string ToString(object value, Type type)
         {
-            if (value == null)
-                return "<null>";
+            var formatter = _cachedFormatters.GetOrAdd(type, CreateFormatter);
 
-            var s = value as string;
+            return formatter.Value(value);
+        }
 
-            if (s != null)
-                return '"' + s + '"';
+        private static Lazy<Func<object, string>> CreateFormatter(Type type)
+        {
+            return new Lazy<Func<object, string>>(() => BuildFormatterDelegate(type));
+        }
 
-            if (valueType.IsArray)
+        private static Func<object, string> BuildFormatterDelegate(Type type)
+        {
+            if (type == typeof(string))
             {
-                if (valueType.GetArrayRank() == 1)
+                return o => o == null ? "null" : ('"' + (string)o + '"');
+            }
+
+            if (type.IsArray)
+            {
+                if (type.GetArrayRank() == 1)
                 {
-                    var arr = (Array)value;
-
-                    if (arr.Length < 100)
+                    return o =>
                     {
-                        var elements = new string[arr.Length];
+                        var arr = (Array)o;
 
-                        for (int i = 0; i < arr.Length; i++)
-                            elements[i] = ToString(arr.GetValue(i));
+                        if (arr.Length < 10)
+                        {
+                            var elements = new string[arr.Length];
 
-                        return TypeUtils.ToFriendlyName(valueType) + " {" + string.Join(", ", elements) + "}";
-                    }
+                            for (int i = 0; i < arr.Length; i++)
+                                elements[i] = ToString(arr.GetValue(i));
+
+                            return TypeUtils.ToFriendlyName(type) + " {" + string.Join(", ", elements) + "}";
+                        }
+                        else
+                        {
+                            return TypeUtils.ToFriendlyName(type) + "[" + arr.Length + "]";
+                        }
+                    };
                 }
             }
 
-            var list = value as System.Collections.IList;
-
-            if (list != null && list.Count < 100)
+            if (typeof(System.Collections.IList).IsAssignableFrom(type))
             {
-                return TypeUtils.ToFriendlyName(valueType) + " {" + string.Join(", ", list.Cast<object>().Select(ToString)) + "}";
+                return o =>
+                {
+                    var list = o as System.Collections.IList;
+
+                    if (list != null && list.Count < 15)
+                    {
+                        return TypeUtils.ToFriendlyName(type) + " {" + string.Join(", ", list.Cast<object>().Select(ToString)) + "}";
+                    }
+                    else
+                    {
+                        return TypeUtils.ToFriendlyName(type) + "[" + list.Count + "]";
+                    }
+                };
             }
 
-            string debuggerDisplayValue;
+            Func<object, string> debuggerDisplayFormatter;
 
-            if (DebuggerDisplayFormatter.TryFormat(valueType, value, out debuggerDisplayValue))
-                return debuggerDisplayValue;
+            if (DebuggerDisplayFormatter.TryGetDebuggerDisplayFormatter(type, out debuggerDisplayFormatter))
+            {
+                return debuggerDisplayFormatter;
+            }
 
-            return Convert.ToString(value);
+            return o => Convert.ToString(o);
         }
     }
 }
