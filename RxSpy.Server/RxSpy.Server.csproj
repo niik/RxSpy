@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="IRxSpyEventHandler.cs" />
     <Compile Include="Communication\IRxSpyServer.cs" />
+    <Compile Include="Observables\IConnection.cs" />
     <Compile Include="RxSpyStreamWriter.cs" />
     <Compile Include="Communication\RxSpyHttpServer.cs" />
     <Compile Include="Communication\Serialization\RxSpyJsonSerializerStrategy.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Proxy\QueryServiceProxy.cs" />
     <Compile Include="RxSpySession.cs" />
     <Compile Include="SimpleJson.cs" />
+    <Compile Include="Utils\ConnectionFactory.cs" />
     <Compile Include="Utils\DebuggerDisplayFormatter.cs" />
     <Compile Include="Utils\Monotonic.cs" />
     <Compile Include="Utils\RxSpyGroup.cs" />

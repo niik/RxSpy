@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Subjects;
@@ -10,6 +11,7 @@ using System.Runtime.Remoting.Proxies;
 using System.Threading;
 using RxSpy.Events;
 using RxSpy.Observables;
+using RxSpy.Utils;
 
 namespace RxSpy.Proxy
 {
@@ -51,8 +53,8 @@ namespace RxSpy.Proxy
         private Func<IMethodCallMessage, IMethodReturnMessage> GetHandler(IMethodCallMessage call, System.Reflection.MethodInfo method)
         {
             var handler = _methodHandlerCache.GetOrAdd(
-                method, 
-                _ => new Lazy<Func<IMethodCallMessage, IMethodReturnMessage>> (
+                method,
+                _ => new Lazy<Func<IMethodCallMessage, IMethodReturnMessage>>(
                     () => CreateHandler(call, method), LazyThreadSafetyMode.ExecutionAndPublication));
 
             return handler.Value;
@@ -81,7 +83,7 @@ namespace RxSpy.Proxy
             {
                 return c => HandleObservableReturnType(c, method, CreateOperatorInfo(call));
             }
-             
+
             return ForwardCall;
         }
 
@@ -116,9 +118,13 @@ namespace RxSpy.Proxy
 
         private object ProduceActualObservable(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
         {
-            var args = ReplaceAllObservablesWithConnections(method, call.InArgs, operatorInfo);
-            var actualObservable = call.MethodBase.Invoke(_queryService, args);
-            return actualObservable;
+            var args = ReplaceAllObservablesWithConnections(
+                method.GetParameters().Select(p => p.ParameterType).ToArray(), 
+                call.InArgs, 
+                operatorInfo
+            );
+
+            return call.MethodBase.Invoke(_queryService, args);
         }
 
         private IMethodReturnMessage ForwardCall(IMethodCallMessage call)
@@ -129,7 +135,7 @@ namespace RxSpy.Proxy
         static readonly string[] _connectableCandidates = new[] { "Multicast", "Publish", "PublishLast", "Replay" };
         static readonly string[] _blockingCandidates = new[] { "Wait", "First", "FirstOrDefault", "Last", "LastOrDefault", "ForEach", };
 
-        bool IsGenericTypeDefinition(Type source, Type genericTypeComparand)
+        static bool IsGenericTypeDefinition(Type source, Type genericTypeComparand)
         {
             return source.IsGenericType && source.GetGenericTypeDefinition() == genericTypeComparand;
         }
@@ -161,59 +167,17 @@ namespace RxSpy.Proxy
             return new ReturnMessage(ret, null, 0, null, call);
         }
 
-        object[] ReplaceAllObservablesWithConnections(System.Reflection.MethodInfo method, object[] args, OperatorInfo operatorInfo)
+        object[] ReplaceAllObservablesWithConnections(Type[] parameterTypes, object[] args, OperatorInfo operatorInfo)
         {
             object[] parameterValues = new object[args.Length];
-            var parameterInfos = method.GetParameters();
 
             for (int i = 0; i < parameterValues.Length; i++)
             {
-                var pt = parameterInfos[i].ParameterType;
+                object connectionObject;
 
-                if (IsGenericTypeDefinition(pt, typeof(IObservable<>)))
+                if (ConnectionFactory.TryCreateConnection(parameterTypes[i], args[i], operatorInfo, out connectionObject))
                 {
-                    var signalType = pt.GetGenericArguments()[0];
-
-                    parameterValues[i] = CreateObservableConnection(args[i], signalType, operatorInfo);
-                }
-                else if (pt.IsArray)
-                {
-                    var observableType = pt.GetElementType();
-
-                    if (IsGenericTypeDefinition(observableType, typeof(IObservable<>)))
-                    {
-                        var signalType = observableType.GetGenericArguments()[0];
-
-                        var argArray = (Array)args[i];
-                        var newArray = Array.CreateInstance(observableType, argArray.Length);
-
-                        for (int j = 0; j < argArray.Length; j++)
-                        {
-                            newArray.SetValue(CreateObservableConnection(argArray.GetValue(j), signalType, operatorInfo), j);
-                        }
-
-                        parameterValues[i] = args[i];
-                    }
-                    else
-                    {
-                        parameterValues[i] = args[i];
-                    }
-                }
-                else if (IsGenericTypeDefinition(pt, typeof(IEnumerable<>)) &&
-                    IsGenericTypeDefinition(pt.GetGenericArguments()[0], typeof(IObservable<>)))
-                {
-                    var observableType = pt.GetGenericArguments()[0];
-                    var signalType = observableType.GetGenericArguments()[0];
-
-                    var enumerableConnectionType = typeof(DeferredOperatorConnectionEnumerable<>)
-                            .MakeGenericType(observableType);
-
-                    parameterValues[i] = Activator.CreateInstance(
-                        enumerableConnectionType,
-                        new object[] { 
-                            args[i], 
-                            new Func<object, object>(o => CreateObservableConnection(o, signalType, operatorInfo)) 
-                        });
+                    parameterValues[i] = connectionObject;
                 }
                 else
                 {
@@ -222,16 +186,6 @@ namespace RxSpy.Proxy
             }
 
             return parameterValues;
-        }
-
-        object CreateObservableConnection(object source, Type signalType, OperatorInfo operatorInfo)
-        {
-            var operatorObservable = typeof(OperatorConnection<>).MakeGenericType(signalType);
-
-            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) })
-                .Invoke(new object[] { _session, source, operatorInfo });
-
-            return instance;
         }
 
         object CreateOperatorObservable(object source, Type signalType, OperatorInfo operatorInfo)
@@ -253,29 +207,6 @@ namespace RxSpy.Proxy
         {
             get { return this.GetType().Name; }
             set { }
-        }
-
-        class DeferredOperatorConnectionEnumerable<T> : IEnumerable<T>
-        {
-            readonly IEnumerable<T> _source;
-            readonly Func<object, object> _selector;
-
-            public DeferredOperatorConnectionEnumerable(IEnumerable<T> source, Func<object, object> selector)
-            {
-                _source = source;
-                _selector = selector;
-            }
-
-            public IEnumerator<T> GetEnumerator()
-            {
-                foreach (var item in _source)
-                    yield return (T)_selector(item);
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
         }
     }
 }

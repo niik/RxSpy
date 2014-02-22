@@ -23,7 +23,7 @@ namespace RxSpy.Observables
         // the wrapper currently responsible for reporting events.
         Observer _currentlyReportingObserver;
 
-        class Observer: IObserver<T>, IDisposable
+        sealed class Observer: IObserver<T>, IDisposable
         {
             readonly OperatorObservable<T> _parent;
             readonly IObserver<T> _inner;

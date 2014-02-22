@@ -4,7 +4,7 @@ using RxSpy.Events;
 
 namespace RxSpy.Observables
 {
-    internal class OperatorConnection<T> : IObservable<T>, IOperatorObservable
+    internal class OperatorConnection<T> : IObservable<T>, IOperatorObservable, IConnection
     {
         readonly OperatorInfo _childInfo;
         private IObservable<T> _parent;
