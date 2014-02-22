@@ -17,7 +17,6 @@ namespace RxSpy
     public class RxSpySession: IRxSpyEventHandler, IDisposable
     {
         static int _launched = 0;
-        readonly WeakObserverCache _cache = new WeakObserverCache();
         readonly IRxSpyEventHandler _eventHandler;
 
         internal static RxSpySession Current { get; private set; }
@@ -128,21 +127,6 @@ namespace RxSpy
                 .GetTransparentProxy();
 
             defaultImplementationField.SetValue(null, proxy);
-        }
-
-        internal OperatorInfo GetOperatorInfoFor(object value)
-        {
-            var oobs = value as IOperatorObservable;
-
-            if (oobs != null)
-                return oobs.OperatorInfo;
-
-            OperatorInfo operatorInfo;
-
-            if (!_cache.TryGetOrAdd(value, out operatorInfo))
-                OnCreated(Event.OperatorCreated(operatorInfo));
-
-            return operatorInfo;
         }
 
         public void OnCreated(IOperatorCreatedEvent onCreatedEvent)

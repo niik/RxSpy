@@ -40,7 +40,7 @@ namespace RxSpy.Utils
             {
                 var signalType = pt.GetGenericArguments()[0];
 
-                return (value, operatorInfo) => CreateObservableConnection(value, signalType, operatorInfo);
+                return (value, operatorInfo) => TryCreateObservableConnection(value, signalType, operatorInfo);
             }
             else if (pt.IsArray)
             {
@@ -60,7 +60,7 @@ namespace RxSpy.Utils
 
                     for (int i = 0; i < argArray.Length; i++)
                     {
-                        newArray.SetValue(CreateObservableConnection(argArray.GetValue(i), signalType, operatorInfo), i);
+                        newArray.SetValue(TryCreateObservableConnection(argArray.GetValue(i), signalType, operatorInfo), i);
                     }
 
                     return newArray;
@@ -81,7 +81,7 @@ namespace RxSpy.Utils
                         enumerableConnectionType,
                         new object[] { 
                             value, 
-                            new Func<object, object>(o => CreateObservableConnection(o, signalType, operatorInfo)) 
+                            new Func<object, object>(o => TryCreateObservableConnection(o, signalType, operatorInfo)) 
                         });
                 };
             }
@@ -89,14 +89,17 @@ namespace RxSpy.Utils
             return null;
         }
 
-        static IConnection CreateObservableConnection(object source, Type signalType, OperatorInfo operatorInfo)
+        static object TryCreateObservableConnection(object source, Type signalType, OperatorInfo operatorInfo)
         {
+            if (!(source is IOperatorObservable))
+                return source;
+
             var operatorObservable = typeof(OperatorConnection<>).MakeGenericType(signalType);
 
             var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) })
                 .Invoke(new object[] { RxSpySession.Current, source, operatorInfo });
 
-            return (IConnection)instance;
+            return instance;
         }
 
         static bool IsGenericTypeDefinition(Type source, Type genericTypeComparand)

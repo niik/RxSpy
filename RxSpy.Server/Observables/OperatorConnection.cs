@@ -18,7 +18,12 @@ namespace RxSpy.Observables
         {
             _session = session;
             _parent = parent;
-            _parentInfo = session.GetOperatorInfoFor(parent);
+
+            var oobs = parent as IOperatorObservable;
+
+            if (oobs != null)
+                _parentInfo = oobs.OperatorInfo;
+
             _childInfo = childInfo;
         }
 
@@ -29,6 +34,12 @@ namespace RxSpy.Observables
 
         public virtual IDisposable Subscribe(IObserver<T> observer)
         {
+            // Parent is not a tracked observable.
+            if (_parentInfo == null)
+            {
+                return _parent.Subscribe(observer);
+            }
+
             var subscriptionId = _session.OnSubscribe(_childInfo, _parentInfo);
 
             var disp = _parent.Subscribe(observer);

@@ -93,7 +93,6 @@
     <Compile Include="Utils\RxSpyGroup.cs" />
     <Compile Include="Utils\TypeUtils.cs" />
     <Compile Include="Utils\ValueFormatter.cs" />
-    <Compile Include="Utils\WeakObserverCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
