@@ -46,8 +46,13 @@ namespace RxSpy.Utils
             {
                 if (type.GetArrayRank() == 1)
                 {
+                    string typeName = TypeUtils.ToFriendlyName(type);
+
                     return o =>
                     {
+                        if (o == null)
+                            return typeName;
+
                         var arr = (Array)o;
 
                         if (arr.Length < 10)
@@ -57,11 +62,11 @@ namespace RxSpy.Utils
                             for (int i = 0; i < arr.Length; i++)
                                 elements[i] = ToString(arr.GetValue(i));
 
-                            return TypeUtils.ToFriendlyName(type) + " {" + string.Join(", ", elements) + "}";
+                            return typeName + " {" + string.Join(", ", elements) + "}";
                         }
                         else
                         {
-                            return TypeUtils.ToFriendlyName(type) + "[" + arr.Length + "]";
+                            return typeName + "[" + arr.Length + "]";
                         }
                     };
                 }
@@ -69,17 +74,21 @@ namespace RxSpy.Utils
 
             if (typeof(System.Collections.IList).IsAssignableFrom(type))
             {
+                string typeName = TypeUtils.ToFriendlyName(type);
                 return o =>
                 {
+                    if (o == null)
+                        return typeName;
+
                     var list = o as System.Collections.IList;
 
                     if (list != null && list.Count < 15)
                     {
-                        return TypeUtils.ToFriendlyName(type) + " {" + string.Join(", ", list.Cast<object>().Select(ToString)) + "}";
+                        return typeName + " {" + string.Join(", ", list.Cast<object>().Select(ToString)) + "}";
                     }
                     else
                     {
-                        return TypeUtils.ToFriendlyName(type) + "[" + list.Count + "]";
+                        return typeName + "[" + list.Count + "]";
                     }
                 };
             }
