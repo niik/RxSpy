@@ -26,11 +26,5 @@ namespace RxSpy.Events
             if (method != null)
                 Method = new MethodInfo(method);
         }
-
-        public CallSite(MethodBase method)
-        {
-            Method = new MethodInfo(method);
-        }
-
     }
 }
