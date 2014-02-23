@@ -82,6 +82,20 @@ namespace RxSpy.Utils
 
         public static CallSite Get(int skipFrames)
         {
+            // Account for ourselves
+            skipFrames++;
+
+            if (_stackFrameFast == null)
+            {
+                // This is terribad, this is going to be soooo sloooooooooooow.
+                // This will eventually happen when the .NET framework authors
+                // excercise their right to change the private implementation we're
+                // depending on.
+                // Fall back to expensive full frame
+
+                return new CallSite(new StackFrame(skipFrames, true));
+            }
+            
             var key = _stackFrameFast(skipFrames + 2);
 
             CallSite cached;
