@@ -40,7 +40,7 @@ namespace RxSpy.StressTest
             var eventHandler = new StressTestEventHandler(new RxSpyStreamWriter(fakeStream));
 
             sw.Restart();
-            
+
             using (RxSpySession.Launch(eventHandler))
             {
                 Run();
@@ -48,10 +48,22 @@ namespace RxSpy.StressTest
 
             var spyRun = sw.Elapsed;
 
-            Console.WriteLine("Stress test run took {0:N4}, captured {1:N0} events, {2:N0} observables", spyRun.TotalSeconds, eventHandler.EventCount, eventHandler.ObservableCount);
-            Console.WriteLine("Produced {0:N0} bytes of event output", fakeStream.Length);
-            Console.WriteLine("RxSpy was {0:N2}x slower", spyRun.TotalSeconds / pureRun.TotalSeconds);
-            Console.ReadLine();
+            Log("Stress test run took {0:N4}, captured {1:N0} events, {2:N0} observables", spyRun.TotalSeconds, eventHandler.EventCount, eventHandler.ObservableCount);
+            Log("Produced {0:N0} bytes of event output", fakeStream.Length);
+            Log("RxSpy was {0:N2}x slower", spyRun.TotalSeconds / pureRun.TotalSeconds);
+
+            if (!Debugger.IsAttached)
+                Console.ReadLine();
+        }
+
+        static void Log(string format, params object[] args)
+        {
+            var text = String.Format(format, args);
+
+            Console.WriteLine(text);
+            Debug.WriteLine(text);
+
+            File.AppendAllText("out.log", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " " + text + "\r\n");
         }
 
         private static void Run()
@@ -83,6 +95,11 @@ namespace RxSpy.StressTest
         static IEnumerable<Task> CreateSimpleObservables()
         {
             yield return Observable.Range(0, 1000).Where(x => x % 2 == 0).ToTask();
+
+            yield return Observable.Range(0, 1000).Where(x => x % 2 == 0)
+                .Select(x => new CustomObjectWithDebuggerDisplay { Name = x.ToString() })
+                .Select(x => x)
+                .ToTask();
         }
 
         static IEnumerable<Task> CreateConnectableObservables()

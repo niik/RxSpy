@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,105 +12,95 @@ namespace RxSpy.Utils
 {
     public static class ValueFormatter
     {
+        readonly static ConcurrentDictionary<Type, Lazy<Func<object, string>>> _cachedFormatters =
+            new ConcurrentDictionary<Type, Lazy<Func<object, string>>>();
+
         public static string ToString(object value)
         {
             if (value == null)
                 return "<null>";
 
-            var s = value as string;
+            return ToString(value, value.GetType());
+        }
 
-            if (s != null)
-                return '"' + s + '"';
+        public static string ToString(object value, Type type)
+        {
+            var formatter = _cachedFormatters.GetOrAdd(type, CreateFormatter);
 
-            var valueType = value.GetType();
+            return formatter.Value(value);
+        }
 
-            if (valueType.IsArray)
+        private static Lazy<Func<object, string>> CreateFormatter(Type type)
+        {
+            return new Lazy<Func<object, string>>(() => BuildFormatterDelegate(type));
+        }
+
+        private static Func<object, string> BuildFormatterDelegate(Type type)
+        {
+            if (type == typeof(string))
             {
-                if (valueType.GetArrayRank() == 1)
+                return o => o == null ? "null" : ('"' + (string)o + '"');
+            }
+
+            if (type.IsArray)
+            {
+                if (type.GetArrayRank() == 1)
                 {
-                    var arr = (Array)value;
+                    string typeName = TypeUtils.ToFriendlyName(type);
 
-                    if (arr.Length < 100)
+                    return o =>
                     {
-                        var elements = new string[arr.Length];
+                        if (o == null)
+                            return typeName;
 
-                        for (int i = 0; i < arr.Length; i++)
-                            elements[i] = ToString(arr.GetValue(i));
+                        var arr = (Array)o;
 
-                        return TypeUtils.ToFriendlyName(valueType) + " {" + string.Join(", ", elements) + "}";
-                    }
+                        if (arr.Length < 10)
+                        {
+                            var elements = new string[arr.Length];
+
+                            for (int i = 0; i < arr.Length; i++)
+                                elements[i] = ToString(arr.GetValue(i));
+
+                            return typeName + " {" + string.Join(", ", elements) + "}";
+                        }
+                        else
+                        {
+                            return typeName + "[" + arr.Length + "]";
+                        }
+                    };
                 }
             }
 
-            var list = value as System.Collections.IList;
-
-            if (list != null && list.Count < 100)
+            if (typeof(System.Collections.IList).IsAssignableFrom(type))
             {
-                return TypeUtils.ToFriendlyName(valueType) + " {" + string.Join(", ", list.Cast<object>().Select(ToString)) + "}";
-            }
-
-            var debuggerDisplayAttributes = valueType.GetCustomAttributes(typeof(DebuggerDisplayAttribute), false);
-
-            if (debuggerDisplayAttributes != null && debuggerDisplayAttributes.Length > 0)
-            {
-                return FormatWithDebuggerDisplay(value, (DebuggerDisplayAttribute)debuggerDisplayAttributes[0]);
-            }
-
-            return Convert.ToString(value);
-        }
-
-        static string FormatWithDebuggerDisplay(object value, DebuggerDisplayAttribute attribute)
-        {
-            return FormatWithDebuggerDisplay(value, attribute.Value);
-        }
-
-        static readonly Regex DebuggerDisplayPropertyRe = new Regex(@"\{\s*(\w[\w\d]+)(,nq)?\s*\}");
-
-        public static string FormatWithDebuggerDisplay(object value, string debuggerDisplayFormat)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            // We only support simple property getters for now, no method invocation
-
-            try
-            {
-                var type = value.GetType();
-
-                return DebuggerDisplayPropertyRe.Replace(debuggerDisplayFormat, m =>
+                string typeName = TypeUtils.ToFriendlyName(type);
+                return o =>
                 {
-                    var propertyName = m.Groups[1].Value;
-                    var propertyValue = GetValueForFieldOrProperty(propertyName, value, type);
+                    if (o == null)
+                        return typeName;
 
-                    if (!m.Groups[2].Success)
+                    var list = o as System.Collections.IList;
+
+                    if (list != null && list.Count < 15)
                     {
-                        return '"' + propertyValue + '"';
+                        return typeName + " {" + string.Join(", ", list.Cast<object>().Select(ToString)) + "}";
                     }
-
-                    return propertyValue;
-                });
+                    else
+                    {
+                        return typeName + "[" + list.Count + "]";
+                    }
+                };
             }
-            catch (Exception exc)
+
+            Func<object, string> debuggerDisplayFormatter;
+
+            if (DebuggerDisplayFormatter.TryGetDebuggerDisplayFormatter(type, out debuggerDisplayFormatter))
             {
-                return "Invocation failed " + exc.Message;
+                return debuggerDisplayFormatter;
             }
-        }
 
-        static string GetValueForFieldOrProperty(string propertyName, object value, Type type)
-        {
-            var property = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty);
-
-            if (property != null)
-                return Convert.ToString(property.GetValue(value));
-
-            var field = type.GetField(propertyName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetField);
-
-            if (field != null)
-                return Convert.ToString(field.GetValue(value));
-
-            return "<err>";
+            return o => Convert.ToString(o);
         }
     }
 }

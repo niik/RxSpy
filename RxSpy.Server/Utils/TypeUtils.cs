@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RxSpy.Utils
@@ -9,6 +11,8 @@ namespace RxSpy.Utils
     public static class TypeUtils
     {
         static Dictionary<Type, string> csFriendlyTypeNames;
+        readonly static ConcurrentDictionary<Type, Lazy<string>> _typeNameCache =
+            new ConcurrentDictionary<Type, Lazy<string>>();
 
         static TypeUtils()
         {
@@ -32,6 +36,15 @@ namespace RxSpy.Utils
         }
 
         public static string ToFriendlyName(Type type)
+        {
+            var lazy = _typeNameCache.GetOrAdd(type, _ => new Lazy<string>(
+                    () => toFriendlyNameImpl(type),
+                    LazyThreadSafetyMode.ExecutionAndPublication));
+
+            return lazy.Value;
+        }
+
+        static string toFriendlyNameImpl(Type type)
         {
             if (type.IsGenericType)
             {

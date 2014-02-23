@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Text;
@@ -9,6 +10,7 @@ using RxSpy.Models;
 
 namespace RxSpy.ViewModels.Graphs
 {
+    [DebuggerDisplay("{Id}")]
     public class ObservableVertex : ReactiveObject, IEquatable<ObservableVertex>
     {
         public long Id { get; set; }

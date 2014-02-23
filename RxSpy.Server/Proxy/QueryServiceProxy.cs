@@ -1,27 +1,40 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
+using System.Threading;
 using RxSpy.Events;
 using RxSpy.Observables;
+using RxSpy.Utils;
+using System.Reactive.Linq;
 
 namespace RxSpy.Proxy
 {
     internal class QueryLanguageProxy : RealProxy, IRemotingTypeInfo
     {
-        readonly object _queryService;
-        readonly Type _queryServiceType;
+        readonly static ConcurrentDictionary<System.Reflection.MethodInfo, Lazy<Func<IMethodCallMessage, IMethodReturnMessage>>> _methodHandlerCache =
+            new ConcurrentDictionary<System.Reflection.MethodInfo, Lazy<Func<IMethodCallMessage, IMethodReturnMessage>>>();
+
+        readonly static ConcurrentDictionary<System.Reflection.MethodInfo, int> _skipFrameCount =
+            new ConcurrentDictionary<System.Reflection.MethodInfo, int>();
+
+        readonly object _queryLanguage;
+        readonly Type _queryLanguageType;
+        readonly Type _queryLanguageInterface;
         readonly RxSpySession _session;
 
-        internal QueryLanguageProxy(RxSpySession session, object realQueryService)
+        internal QueryLanguageProxy(RxSpySession session, object realQueryLanguage)
             : base(typeof(ContextBoundObject))
         {
-            _queryService = realQueryService;
-            _queryServiceType = realQueryService.GetType();
+            _queryLanguage = realQueryLanguage;
+            _queryLanguageType = realQueryLanguage.GetType();
+            _queryLanguageInterface = _queryLanguageType.GetInterface("IQueryLanguage");
             _session = session;
         }
 
@@ -30,59 +43,101 @@ namespace RxSpy.Proxy
             var call = msg as IMethodCallMessage;
 
             if (call == null)
-                throw new NotImplementedException();
-
-            var method = (System.Reflection.MethodInfo)call.MethodBase;
+                throw new ArgumentException("QueryLanguageProxy only supports call messages");
 
             if (RxSpyGroup.IsActive)
             {
                 return ForwardCall(call);
             }
 
-            if (call.MethodName == "GetAwaiter")
+            var method = (System.Reflection.MethodInfo)call.MethodBase;
+
+            int skipFrames;
+
+            // Walk the stack until we find the first invocation to IQueryLanguage, this is expensive
+            // but fortunately unique per method so we can cache it.
+            if (!_skipFrameCount.TryGetValue(method, out skipFrames))
             {
-                return ForwardCall(call);
+                skipFrames = -1;
+
+                var trace = new StackTrace(0, false);
+                var frames = trace.GetFrames();
+
+                for (int i = 0; i < frames.Length; i++)
+                {
+                    if (frames[i].GetMethod().DeclaringType == _queryLanguageInterface)
+                    {
+                        for (; i < frames.Length; i++)
+                        {
+                            if (frames[i].GetMethod().DeclaringType != _queryLanguageInterface)
+                            {
+                                skipFrames = _skipFrameCount.GetOrAdd(method, i + 1);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
+            Debug.Assert(skipFrames > 0);
+
+            var callSite = skipFrames == -1 ? null : CallSiteCache.Get(skipFrames);
+            var handler = GetHandler(call, method, callSite);
+
+            return handler(call);
+        }
+
+        Func<IMethodCallMessage, IMethodReturnMessage> GetHandler(IMethodCallMessage call, System.Reflection.MethodInfo method, CallSite callSite)
+        {
+            if (call.MethodName == "GetAwaiter")
+            {
+                return ForwardCall;
+            }
+
+            var handler = _methodHandlerCache.GetOrAdd(
+                method,
+                _ => new Lazy<Func<IMethodCallMessage, IMethodReturnMessage>>(
+                    () => CreateHandler(call, method, callSite), LazyThreadSafetyMode.ExecutionAndPublication));
+
+            return handler.Value;
+        }
+
+        Func<IMethodCallMessage, IMethodReturnMessage> CreateHandler(IMethodCallMessage call, System.Reflection.MethodInfo method, CallSite callSite)
+        {
             // IConnectableObservable parameters
             if (call.MethodName == "RefCount")
             {
-                return HandleRefCount(call, CreateOperatorInfo(call));
+                return CreateRefCountHandler(call, method, CreateOperatorInfo(method, callSite));
             }
 
             // IConnectableObservable return types
             if (Array.IndexOf(_connectableCandidates, call.MethodName) >= 0 &&
                 IsGenericTypeDefinition(method.ReturnType, typeof(IConnectableObservable<>)))
             {
-                return HandleConnectableReturnType(call, method, CreateOperatorInfo(call));
+                return c => HandleConnectableReturnType(c, method, CreateOperatorInfo(method, callSite));
             }
             else if (IsGenericTypeDefinition(method.ReturnType, typeof(IObservable<>)))
             {
-                return HandleObservableReturnType(call, method, CreateOperatorInfo(call));
+                return c => HandleObservableReturnType(c, method, CreateOperatorInfo(method, callSite));
             }
-            else
-            {
-                return ForwardCall(call);
-            }
+
+            return ForwardCall;
         }
 
-        private static OperatorInfo CreateOperatorInfo(IMethodCallMessage call)
+        private static OperatorInfo CreateOperatorInfo(System.Reflection.MethodInfo method, CallSite callsite)
         {
-            var operatorCallSite = new MethodInfo(call.MethodBase);
-            var callSite = new CallSite(new StackFrame(5, true));
-            var operatorInfo = new OperatorInfo(callSite, operatorCallSite);
-            return operatorInfo;
+            return new OperatorInfo(callsite, new MethodInfo(method));
         }
 
-        private IMessage HandleObservableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
+        private IMethodReturnMessage HandleObservableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
         {
             var actualObservable = ProduceActualObservable(call, method, operatorInfo);
 
-            var ret = CreateOperatorObservable(actualObservable, method.ReturnType.GetGenericArguments()[0], operatorInfo);
+            var ret = OperatorFactory.CreateOperatorObservable(actualObservable, method.ReturnType.GetGenericArguments()[0], operatorInfo);
             return new ReturnMessage(ret, null, 0, null, call);
         }
 
-        private IMessage HandleConnectableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
+        private IMethodReturnMessage HandleConnectableReturnType(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
         {
             var genericType = method.ReturnType.GetGenericArguments()[0];
             var actualObservable = ProduceActualObservable(call, method, operatorInfo);
@@ -97,96 +152,64 @@ namespace RxSpy.Proxy
 
         private object ProduceActualObservable(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
         {
-            var args = ReplaceAllObservablesWithConnections(method, call.InArgs, operatorInfo);
-            var actualObservable = call.MethodBase.Invoke(_queryService, args);
-            return actualObservable;
+            var args = ReplaceAllObservablesWithConnections(
+                method.GetParameters().Select(p => p.ParameterType).ToArray(),
+                call.InArgs,
+                operatorInfo
+            );
+
+            return call.MethodBase.Invoke(_queryLanguage, args);
         }
 
-        private IMessage ForwardCall(IMethodCallMessage call)
+        private IMethodReturnMessage ForwardCall(IMethodCallMessage call)
         {
-            return new ReturnMessage(call.MethodBase.Invoke(_queryService, call.InArgs), null, 0, null, call);
+            return new ReturnMessage(call.MethodBase.Invoke(_queryLanguage, call.InArgs), null, 0, null, call);
         }
 
         static readonly string[] _connectableCandidates = new[] { "Multicast", "Publish", "PublishLast", "Replay" };
         static readonly string[] _blockingCandidates = new[] { "Wait", "First", "FirstOrDefault", "Last", "LastOrDefault", "ForEach", };
 
-        bool IsGenericTypeDefinition(Type source, Type genericTypeComparand)
+        static bool IsGenericTypeDefinition(Type source, Type genericTypeComparand)
         {
             return source.IsGenericType && source.GetGenericTypeDefinition() == genericTypeComparand;
         }
 
-        private IMessage HandleRefCount(IMethodCallMessage call, OperatorInfo operatorInfo)
+        Func<IMethodCallMessage, IMethodReturnMessage> CreateRefCountHandler(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
+        {
+            var signalType = method.GetGenericArguments()[0];
+            var connectableOperatorConnectionType = typeof(ConnectableOperatorConnection<>).MakeGenericType(signalType);
+
+            return c => HandleRefCount(c, method, connectableOperatorConnectionType, signalType, operatorInfo);
+        }
+
+        IMethodReturnMessage HandleRefCount(IMethodCallMessage call, System.Reflection.MethodInfo method, Type connectableOperatorConnectionType, Type signalType, OperatorInfo operatorInfo)
         {
             Debug.Assert(call.InArgs.Length == 1);
 
-            var signalType = call.MethodBase.GetGenericArguments()[0];
-
             var args = new object[] {
-                    Activator.CreateInstance(
-                        typeof(ConnectableOperatorConnection<>).MakeGenericType(signalType),
-                        new object[] { _session, call.InArgs[0], operatorInfo }
-                    )
-                };
+                Activator.CreateInstance(
+                    connectableOperatorConnectionType,
+                    new object[] { _session, call.InArgs[0], operatorInfo }
+                )
+            };
 
-            var actualObservable = call.MethodBase.Invoke(_queryService, call.InArgs);
-            var ret = CreateOperatorObservable(actualObservable, signalType, operatorInfo);
+            var actualObservable = method.Invoke(_queryLanguage, call.InArgs);
+            var ret = OperatorFactory.CreateOperatorObservable(actualObservable, signalType, operatorInfo);
 
             return new ReturnMessage(ret, null, 0, null, call);
         }
 
-        object[] ReplaceAllObservablesWithConnections(System.Reflection.MethodInfo method, object[] args, OperatorInfo operatorInfo)
+        object[] ReplaceAllObservablesWithConnections(Type[] parameterTypes, object[] args, OperatorInfo operatorInfo)
         {
             object[] parameterValues = new object[args.Length];
-            var parameterInfos = method.GetParameters();
 
             for (int i = 0; i < parameterValues.Length; i++)
             {
-                var pt = parameterInfos[i].ParameterType;
+                object connectionObject;
 
-                if (IsGenericTypeDefinition(pt, typeof(IObservable<>)))
+                if (ConnectionFactory.TryCreateConnection(parameterTypes[i], args[i], operatorInfo, out connectionObject))
                 {
-                    var signalType = pt.GetGenericArguments()[0];
-
-                    parameterValues[i] = CreateObservableConnection(args[i], signalType, operatorInfo);
-                }
-                else if (pt.IsArray)
-                {
-                    var observableType = pt.GetElementType();
-
-                    if (IsGenericTypeDefinition(observableType, typeof(IObservable<>)))
-                    {
-                        var signalType = observableType.GetGenericArguments()[0];
-
-                        var argArray = (Array)args[i];
-                        var newArray = Array.CreateInstance(observableType, argArray.Length);
-
-                        for (int j = 0; j < argArray.Length; j++)
-                        {
-                            newArray.SetValue(CreateObservableConnection(argArray.GetValue(j), signalType, operatorInfo), j);
-                        }
-
-                        parameterValues[i] = args[i];
-                    }
-                    else
-                    {
-                        parameterValues[i] = args[i];
-                    }
-                }
-                else if (IsGenericTypeDefinition(pt, typeof(IEnumerable<>)) &&
-                    IsGenericTypeDefinition(pt.GetGenericArguments()[0], typeof(IObservable<>)))
-                {
-                    var observableType = pt.GetGenericArguments()[0];
-                    var signalType = observableType.GetGenericArguments()[0];
-
-                    var enumerableConnectionType = typeof(DeferredOperatorConnectionEnumerable<>)
-                            .MakeGenericType(observableType);
-
-                    parameterValues[i] = Activator.CreateInstance(
-                        enumerableConnectionType,
-                        new object[] { 
-                            args[i], 
-                            new Func<object, object>(o => CreateObservableConnection(o, signalType, operatorInfo)) 
-                        });
+                    parameterValues[i] = connectionObject;
                 }
                 else
                 {
@@ -195,26 +218,6 @@ namespace RxSpy.Proxy
             }
 
             return parameterValues;
-        }
-
-        object CreateObservableConnection(object source, Type signalType, OperatorInfo operatorInfo)
-        {
-            var operatorObservable = typeof(OperatorConnection<>).MakeGenericType(signalType);
-
-            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) })
-                .Invoke(new object[] { _session, source, operatorInfo });
-
-            return instance;
-        }
-
-        object CreateOperatorObservable(object source, Type signalType, OperatorInfo operatorInfo)
-        {
-            var operatorObservable = typeof(OperatorObservable<>).MakeGenericType(signalType);
-
-            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) })
-                .Invoke(new object[] { _session, source, operatorInfo });
-
-            return instance;
         }
 
         public bool CanCastTo(Type fromType, object o)
@@ -228,27 +231,5 @@ namespace RxSpy.Proxy
             set { }
         }
 
-        class DeferredOperatorConnectionEnumerable<T> : IEnumerable<T>
-        {
-            readonly IEnumerable<T> _source;
-            readonly Func<object, object> _selector;
-
-            public DeferredOperatorConnectionEnumerable(IEnumerable<T> source, Func<object, object> selector)
-            {
-                _source = source;
-                _selector = selector;
-            }
-
-            public IEnumerator<T> GetEnumerator()
-            {
-                foreach (var item in _source)
-                    yield return (T)_selector(item);
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-        }
     }
 }
