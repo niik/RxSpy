@@ -21,7 +21,7 @@ RxSpy consists of two pieces. ```RxSpy.Server``` which is the small library you 
    - The timestamp of when the signal was produced
    - A string representation of the value itself (using ```DebuggerDisplay``` if available, falls back to ```.ToString()```)
    - What thread the value was produced on (helpful for debugging UI thread issues)
- - If the observable completed in error and (soon) the full details of that error
+ - If the observable completed in error and the full details of that error
  - Total number of observables observed (no pun intended)
  - Total number of signals so far in the app
  - Signals per second currently
@@ -30,16 +30,3 @@ RxSpy consists of two pieces. ```RxSpy.Server``` which is the small library you 
 
  - By double-clicking on an observable in the app you get a visual graph rendering of that observable, all of its ancestors and descendants. The graph is live-updating and 
  - If you tack on ```.SpyTag("Foo")``` to one of the observables in your app that tag will show in the UI. Making it easy to locate the observable in the app.
-
-## Planned
-
- - Support for connectable observables
- - Support for some of the more non-standard operators like ```Chunkify``` (which blocks and returns an IEnumerable)
- - Support arguments of ```IObservable<IObservable<T>>``` (Concat)
- - Capture more details around selectors
-   - Observable.Timer should capture the arguments and the UI should show something like ```Timer (Immediate, 1s)``` instead of just ```Timer```.   
- - I would like to make it possible for libraries like ReactiveUI to signal that a series of observables should be grouped together. The ```WhenAny``` method in ReactiveUI for example should be considered an operator and should show up as a single node instead of the graph of observables stringed together to create it.
-   - My current plan for this is to use  the ```System.ComponentModel.CategoryAttribute``` so that libraries don't have to take a dependency on RxSpy. ```WhenAny``` would then be decorated with ```[Category("RxSpy.Operator")]``` or something to that effect.
- - Breakpoints
-   - It should be possible to select a node and trigger a breakpoint in the app when it produces a value, completes or signals an error. 
- - ```RxSpy.Server``` currently has a dependency on ```Microsoft.Tpl.DataFlow```, that's gonna go away once I get time to rewrite the pub/sub stuff without using Rx (ugh). 
