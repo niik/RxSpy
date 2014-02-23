@@ -50,8 +50,13 @@ namespace RxSpy.Proxy
             return handler(call);
         }
 
-        private Func<IMethodCallMessage, IMethodReturnMessage> GetHandler(IMethodCallMessage call, System.Reflection.MethodInfo method)
+        Func<IMethodCallMessage, IMethodReturnMessage> GetHandler(IMethodCallMessage call, System.Reflection.MethodInfo method)
         {
+            if (call.MethodName == "GetAwaiter")
+            {
+                return ForwardCall;
+            }
+
             var handler = _methodHandlerCache.GetOrAdd(
                 method,
                 _ => new Lazy<Func<IMethodCallMessage, IMethodReturnMessage>>(
@@ -62,36 +67,31 @@ namespace RxSpy.Proxy
 
         Func<IMethodCallMessage, IMethodReturnMessage> CreateHandler(IMethodCallMessage call, System.Reflection.MethodInfo method)
         {
-            if (call.MethodName == "GetAwaiter")
-            {
-                return ForwardCall;
-            }
-
             // IConnectableObservable parameters
             if (call.MethodName == "RefCount")
             {
-                return CreateRefCountHandler(call);
+                return CreateRefCountHandler(call, method, CreateOperatorInfo(method));
             }
 
             // IConnectableObservable return types
             if (Array.IndexOf(_connectableCandidates, call.MethodName) >= 0 &&
                 IsGenericTypeDefinition(method.ReturnType, typeof(IConnectableObservable<>)))
             {
-                return c => HandleConnectableReturnType(c, method, CreateOperatorInfo(call));
+                return c => HandleConnectableReturnType(c, method, CreateOperatorInfo(method));
             }
             else if (IsGenericTypeDefinition(method.ReturnType, typeof(IObservable<>)))
             {
-                return c => HandleObservableReturnType(c, method, CreateOperatorInfo(call));
+                return c => HandleObservableReturnType(c, method, CreateOperatorInfo(method));
             }
 
             return ForwardCall;
         }
 
-        private static OperatorInfo CreateOperatorInfo(IMethodCallMessage call)
+        private static OperatorInfo CreateOperatorInfo(System.Reflection.MethodInfo method)
         {
-            var operatorCallSite = new MethodInfo(call.MethodBase);
-            var callSite = new CallSite(new StackFrame(5, true));
-            var operatorInfo = new OperatorInfo(callSite, operatorCallSite);
+            var operatorCallSite = new MethodInfo(method);
+            //var callSite = new CallSite(new StackFrame(5, true));
+            var operatorInfo = new OperatorInfo(null, operatorCallSite);
             return operatorInfo;
         }
 
@@ -99,7 +99,7 @@ namespace RxSpy.Proxy
         {
             var actualObservable = ProduceActualObservable(call, method, operatorInfo);
 
-            var ret = CreateOperatorObservable(actualObservable, method.ReturnType.GetGenericArguments()[0], operatorInfo);
+            var ret = OperatorFactory.CreateOperatorObservable(actualObservable, method.ReturnType.GetGenericArguments()[0], operatorInfo);
             return new ReturnMessage(ret, null, 0, null, call);
         }
 
@@ -140,18 +140,16 @@ namespace RxSpy.Proxy
             return source.IsGenericType && source.GetGenericTypeDefinition() == genericTypeComparand;
         }
 
-        Func<IMethodCallMessage, IMethodReturnMessage> CreateRefCountHandler(IMethodCallMessage call)
+        Func<IMethodCallMessage, IMethodReturnMessage> CreateRefCountHandler(IMethodCallMessage call, System.Reflection.MethodInfo method, OperatorInfo operatorInfo)
         {
-            var signalType = call.MethodBase.GetGenericArguments()[0];
+            var signalType = method.GetGenericArguments()[0];
             var connectableOperatorConnectionType = typeof(ConnectableOperatorConnection<>).MakeGenericType(signalType);
 
-            return c => HandleRefCount(c, connectableOperatorConnectionType, signalType);
+            return c => HandleRefCount(c, method, connectableOperatorConnectionType, signalType, operatorInfo);
         }
 
-        IMethodReturnMessage HandleRefCount(IMethodCallMessage call, Type connectableOperatorConnectionType, Type signalType)
+        IMethodReturnMessage HandleRefCount(IMethodCallMessage call, System.Reflection.MethodInfo method, Type connectableOperatorConnectionType, Type signalType, OperatorInfo operatorInfo)
         {
-            var operatorInfo = CreateOperatorInfo(call);
-
             Debug.Assert(call.InArgs.Length == 1);
 
             var args = new object[] {
@@ -161,8 +159,8 @@ namespace RxSpy.Proxy
                 )
             };
 
-            var actualObservable = call.MethodBase.Invoke(_queryService, call.InArgs);
-            var ret = CreateOperatorObservable(actualObservable, signalType, operatorInfo);
+            var actualObservable = method.Invoke(_queryService, call.InArgs);
+            var ret = OperatorFactory.CreateOperatorObservable(actualObservable, signalType, operatorInfo);
 
             return new ReturnMessage(ret, null, 0, null, call);
         }
@@ -186,16 +184,6 @@ namespace RxSpy.Proxy
             }
 
             return parameterValues;
-        }
-
-        object CreateOperatorObservable(object source, Type signalType, OperatorInfo operatorInfo)
-        {
-            var operatorObservable = typeof(OperatorObservable<>).MakeGenericType(signalType);
-
-            var instance = operatorObservable.GetConstructor(new[] { typeof(RxSpySession), typeof(IObservable<>).MakeGenericType(signalType), typeof(OperatorInfo) })
-                .Invoke(new object[] { _session, source, operatorInfo });
-
-            return instance;
         }
 
         public bool CanCastTo(Type fromType, object o)
