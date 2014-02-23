@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -6,7 +7,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using RxSpy.Communication.Serialization;
 using RxSpy.Events;
 
@@ -27,7 +27,7 @@ namespace RxSpy.Communication
 
         public Uri Address { get; private set; }
 
-        readonly BufferBlock<IEvent> _queue = new BufferBlock<IEvent>();
+        ConcurrentQueue<IEvent> _queue = new ConcurrentQueue<IEvent>();
 
         public RxSpyHttpServer()
         {
@@ -57,7 +57,7 @@ namespace RxSpy.Communication
         public void EnqueueEvent(IEvent ev)
         {
             if (_hasConnection)
-                _queue.Post(ev);
+                _queue.Enqueue(ev);
         }
 
         async Task Run(CancellationToken ct)
@@ -112,10 +112,17 @@ namespace RxSpy.Communication
                     {
                         try
                         {
-                            var ev = await _queue.ReceiveAsync(ct);
+                            IEvent ev;
 
-                            if (!ct.IsCancellationRequested)
-                                await sw.WriteLineAsync(SimpleJson.SerializeObject(ev, _serializerStrategy));
+                            while (!ct.IsCancellationRequested)
+                            {
+                                while (!ct.IsCancellationRequested && _queue.TryDequeue(out ev))
+                                {
+                                    await sw.WriteLineAsync(SimpleJson.SerializeObject(ev, _serializerStrategy));
+                                }
+
+                                await Task.Delay(200, ct);
+                            }
                         }
                         catch (Exception e)
                         {
