@@ -16,7 +16,6 @@ namespace RxSpy.Utils
             new ConcurrentDictionary<Tuple<IntPtr, int>, CallSite>();
 
         delegate Tuple<IntPtr, int> GetStackFrameInfo(int skipFrames);
-        delegate Tuple<IntPtr[], int[]> GetStackInfo(int skipFrames);
 
         static CallSiteCache()
         {
@@ -44,7 +43,13 @@ namespace RxSpy.Utils
             var sfhRgMethodHandle = sfhType.GetField("rgMethodHandle", bcl.BindingFlags.NonPublic | bcl.BindingFlags.Instance);
             var sfhRgiILOffsetField = sfhType.GetField("rgiILOffset", bcl.BindingFlags.NonPublic | bcl.BindingFlags.Instance);
 
+            var sfhGetMethodBaseMethod = sfhType.GetMethod("GetMethodBase",
+                bcl.BindingFlags.Instance | bcl.BindingFlags.Public);
+
             var getStackFramesInternalMethod = typeof(StackTrace).GetMethod("GetStackFramesInternal",
+                bcl.BindingFlags.Static | bcl.BindingFlags.NonPublic);
+
+            var calculateFramesToSkipMethod = typeof(StackTrace).GetMethod("CalculateFramesToSkip",
                 bcl.BindingFlags.Static | bcl.BindingFlags.NonPublic);
 
             var currentThreadProperty = typeof(Thread).GetProperty("CurrentThread");
@@ -52,6 +57,7 @@ namespace RxSpy.Utils
 
             var skipParam = Expression.Parameter(typeof(int), "iSkip");
             var sfhVariable = Expression.Variable(sfhType, "sfh");
+            var actualSkip = Expression.Variable(typeof(int), "iNumFrames");
 
             var zero = Expression.Constant(0, typeof(int));
 
@@ -63,15 +69,15 @@ namespace RxSpy.Utils
                         sfhVariable,
                         Expression.New(sfhCtor,
                             Expression.Constant(false, typeof(bool)), // fNeedFileLineColInfo
-                            Expression.Property(null, currentThreadProperty) // target (thread)
+                            Expression.Constant(null, typeof(Thread)) // target (thread)
                         )
                     ),
 
-                    Expression.Call(getStackFramesInternalMethod, sfhVariable, skipParam, Expression.Constant(null, typeof(Exception))),
+                    Expression.Call(getStackFramesInternalMethod, sfhVariable, zero, Expression.Constant(null, typeof(Exception))),
 
                     Expression.New(tupleCtor,
-                        Expression.ArrayIndex(Expression.Field(sfhVariable, sfhRgMethodHandle), zero),
-                        Expression.ArrayIndex(Expression.Field(sfhVariable, sfhRgiILOffsetField), zero)
+                        Expression.ArrayIndex(Expression.Field(sfhVariable, sfhRgMethodHandle), skipParam),
+                        Expression.ArrayIndex(Expression.Field(sfhVariable, sfhRgiILOffsetField), skipParam)
                     )
                 ),
                 skipParam
@@ -87,7 +93,7 @@ namespace RxSpy.Utils
 
             if (_stackFrameFast == null)
             {
-                // This is terribad, this is going to be soooo sloooooooooooow.
+                // This is terribad, this session is going to be soooo sloooooooooooow.
                 // This will eventually happen when the .NET framework authors
                 // excercise their right to change the private implementation we're
                 // depending on.
@@ -96,6 +102,8 @@ namespace RxSpy.Utils
                 return new CallSite(new StackFrame(skipFrames, true));
             }
             
+            // Don't exactly know why we need to skip 2 and not 1 here. 
+            // I suspect expression tree trickery.
             var key = _stackFrameFast(skipFrames + 2);
 
             CallSite cached;
@@ -104,7 +112,6 @@ namespace RxSpy.Utils
                 return cached;
 
             var frame = new StackFrame(skipFrames, true);
-            Debug.Assert(key.Item1 == frame.GetMethod().MethodHandle.Value);
 
             var callSite = new CallSite(frame);
 
