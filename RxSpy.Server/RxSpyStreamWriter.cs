@@ -49,8 +49,7 @@ namespace RxSpy
                 {
                     while (!ct.IsCancellationRequested && _queue.TryDequeue(out ev))
                     {
-                        _queue.TryDequeue(out ev);
-                        sw.Write('.');
+                        sw.WriteLine(SimpleJson.SerializeObject(ev, _serializerStrategy));
                     }
 
                     await Task.Delay(200, ct);
