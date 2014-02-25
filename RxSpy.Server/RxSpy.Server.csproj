@@ -86,6 +86,7 @@
     <Compile Include="Utils\ConnectionFactory.cs" />
     <Compile Include="Utils\DebuggerDisplayFormatter.cs" />
     <Compile Include="Utils\CallSiteCache.cs" />
+    <Compile Include="Utils\MethodInvoker.cs" />
     <Compile Include="Utils\Monotonic.cs" />
     <Compile Include="Utils\OperatorFactory.cs" />
     <Compile Include="Utils\RxSpyGroup.cs" />

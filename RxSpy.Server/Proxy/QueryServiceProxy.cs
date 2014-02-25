@@ -158,12 +158,14 @@ namespace RxSpy.Proxy
                 operatorInfo
             );
 
-            return call.MethodBase.Invoke(_queryLanguage, args);
+            return MethodInvoker.Invoke(_queryLanguage, _queryLanguageType, method, args);
         }
 
         private IMethodReturnMessage ForwardCall(IMethodCallMessage call)
         {
-            return new ReturnMessage(call.MethodBase.Invoke(_queryLanguage, call.InArgs), null, 0, null, call);
+            var ret = MethodInvoker.Invoke(_queryLanguage, _queryLanguageType, (System.Reflection.MethodInfo)call.MethodBase, call.InArgs);
+
+            return new ReturnMessage(ret, null, 0, null, call);
         }
 
         static readonly string[] _connectableCandidates = new[] { "Multicast", "Publish", "PublishLast", "Replay" };
@@ -193,7 +195,7 @@ namespace RxSpy.Proxy
                 )
             };
 
-            var actualObservable = method.Invoke(_queryLanguage, call.InArgs);
+            var actualObservable = MethodInvoker.Invoke(_queryLanguage, _queryLanguageType, method, call.InArgs); 
             var ret = OperatorFactory.CreateOperatorObservable(actualObservable, signalType, operatorInfo);
 
             return new ReturnMessage(ret, null, 0, null, call);
