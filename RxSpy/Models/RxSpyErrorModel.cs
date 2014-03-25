@@ -12,9 +12,11 @@ namespace RxSpy.Models
         public string Message { get; set; }
         public TimeSpan Received { get; set; }
         public string StackTrace { get; set; }
+        public long OperatorId { get; set; }
 
         public RxSpyErrorModel(IOnErrorEvent onErrorEvent)
         {
+            OperatorId = onErrorEvent.OperatorId;
             Received = TimeSpan.FromMilliseconds(onErrorEvent.EventTime);
             ErrorType = onErrorEvent.ErrorType;
             Message = onErrorEvent.Message;
