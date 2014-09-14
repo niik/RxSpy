@@ -10,7 +10,9 @@
     <language>en-us</language>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <dependencies>
-      <dependency id="rx-main" version="2.2.2" />
+      <dependency id="Rx-Core" version="[2.1,2.2]" />
+      <dependency id="Rx-Interfaces" version="[2.1,2.2]" />
+      <dependency id="Rx-Linq" version="[2.1,2.2]" />
     </dependencies>
   </metadata>
 
