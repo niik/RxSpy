@@ -4,20 +4,19 @@
     <id>rxspy</id>
     <version>0.1.0</version>
     <description>A tool to examine live Observables in your applications</description>
-    <authors>Marcus Olsson</authors>
+    <authors>Markus Olsson</authors>
     <projectUrl>https://github.com/niik/RxSpy</projectUrl>
     <licenseUrl>https://github.com/niik/RxSpy/blob/master/LICENSE</licenseUrl>
     <language>en-us</language>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <dependencies>
       <dependency id="rx-main" version="2.2.2" />
-      <dependency id="Microsoft.Tpl.Dataflow" version="4.5.14" />
     </dependencies>
   </metadata>
 
   <files>
-    <file src="RxSpy\bin\Release\*.exe" target="tools" />
-    <file src="RxSpy\bin\Release\*.dll" target="tools" />
-    <file src="RxSpy.Server\bin\Release\RxSpy*.dll" target="lib\net45" />
+    <file src="RxSpy\bin\Release\RxSpy.dll" target="lib\net45" />
+    <file src="RxSpy.LiveView\bin\Release\RxSpy.LiveView.exe" target="tools" />
+    <file src="RxSpy.LiveView\bin\Release\*.dll" target="tools" />
   </files>
 </package>
