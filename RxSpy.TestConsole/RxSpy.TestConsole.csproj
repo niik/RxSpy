@@ -63,9 +63,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RxSpy.Server\RxSpy.Server.csproj">
+    <ProjectReference Include="..\RxSpy\RxSpy.csproj">
       <Project>{ad01307e-2429-482a-9f7a-a8aa147bcfda}</Project>
-      <Name>RxSpy.Server</Name>
+      <Name>RxSpy</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

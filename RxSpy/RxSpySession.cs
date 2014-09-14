@@ -39,7 +39,7 @@ namespace RxSpy
             string pathToGui = FindGuiPath(pathToRxSpy);
 
             if (pathToGui == null)
-                throw new FileNotFoundException("Could not locate RxSpy.exe");
+                throw new FileNotFoundException("Could not locate RxSpy.LiveView.exe");
 
             var server = new RxSpyHttpServer();
 
@@ -69,14 +69,14 @@ namespace RxSpy
 
         static string FindGuiPath(string explicitPathToRxSpy)
         {
-            // Try a few different things attempting to find RxSpy.exe, depending
-            // on how things are configured
+            // Try a few different things attempting to find RxSpy.LiveView.exe
+            // depending on how things are configured
             if (explicitPathToRxSpy != null) return explicitPathToRxSpy;
 
             // Same directory as us?
             var ourAssembly = typeof(RxSpySession).Assembly;
             var rxSpyDir = Path.GetDirectoryName(ourAssembly.Location);
-            var target = Path.Combine(rxSpyDir, "RxSpy.exe");
+            var target = Path.Combine(rxSpyDir, "RxSpy.LiveView.exe");
             if (File.Exists(target))
             {
                 return target;
@@ -96,18 +96,18 @@ namespace RxSpy
             }
 
             // Debug mode?
-            var fi = new FileInfo(Path.Combine(di.FullName, "RxSpy", "bin", "Debug", "RxSpy.exe"));
+            var fi = new FileInfo(Path.Combine(di.FullName, "RxSpy.LiveView", "bin", "Debug", "RxSpy.LiveView.exe"));
             if (fi.Exists) return fi.FullName;
 
             // Attempt to track down our own version
             fi = new FileInfo(Path.Combine(di.FullName,
                 "packages",
-                String.Format("RxSpy.{0}", ourAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version),
+                String.Format("RxSpy.LiveView.{0}", ourAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version),
                 "tools",
-                "RxSpy.exe"));
+                "RxSpy.LiveView.exe"));
             if (fi.Exists) return fi.FullName;
 
-            throw new ArgumentException("Can't find RxSpy.exe - either copy it and its DLLs to your output directory or pass in a path to Create");
+            throw new ArgumentException("Can't find RxSpy.LiveView.exe - either copy it and its DLLs to your output directory or pass in a path to Create");
         }
 
         static void InstallInterceptingQueryLanguage(RxSpySession session)
