@@ -114,38 +114,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\RxSpy\Events\EventType.cs">
-      <Link>Models\Events\EventType.cs</Link>
-    </Compile>
-    <Compile Include="..\RxSpy\Events\Interfaces.cs">
-      <Link>Models\Events\Interfaces.cs</Link>
-    </Compile>
     <Compile Include="AppStartup\StartupSequence.cs" />
     <Compile Include="Communication\IRxSpyClient.cs" />
     <Compile Include="Communication\RxSpyHttpClient.cs" />
-    <Compile Include="Communication\Serialization\RxSpyJsonSerializerStrategy.cs" />
     <Compile Include="GraphWindow.xaml.cs">
       <DependentUpon>GraphWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\Events\CallSite.cs" />
-    <Compile Include="Models\Events\ConnectedEvent.cs" />
-    <Compile Include="Models\Events\DisconnectedEvent.cs" />
-    <Compile Include="Models\Events\Event.cs" />
-    <Compile Include="Models\Events\MethodInfo.cs" />
-    <Compile Include="Models\Events\OnCompletedEvent.cs" />
-    <Compile Include="Models\Events\OnErrorEvent.cs" />
-    <Compile Include="Models\Events\OnNextEvent.cs" />
-    <Compile Include="Models\Events\OperatorCreatedEvent.cs" />
-    <Compile Include="Models\Events\SubscribeEvent.cs" />
-    <Compile Include="Models\Events\TagOperatorEvent.cs" />
-    <Compile Include="Models\Events\TypeInfo.cs" />
-    <Compile Include="Models\Events\UnsubscribeEvent.cs" />
     <Compile Include="Models\RxSpyErrorModel.cs" />
     <Compile Include="Models\RxSpyObservableModel.cs" />
     <Compile Include="Models\RxSpyObservedValueModel.cs" />
     <Compile Include="Models\RxSpySessionModel.cs" />
     <Compile Include="Models\RxSpySubscriptionModel.cs" />
-    <Compile Include="SimpleJson.cs" />
     <Compile Include="ViewModels\Graphs\ObservableGraph.cs" />
     <Compile Include="ViewModels\Graphs\ObservableGraphLayout.cs" />
     <Compile Include="ViewModels\Graphs\ObservableVertex.cs" />
@@ -232,6 +211,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\rxspy.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RxSpy.Shared\RxSpy.Shared.csproj">
+      <Project>{1e10026e-8a90-46f1-8fb2-06bedc21b4cc}</Project>
+      <Name>RxSpy.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
