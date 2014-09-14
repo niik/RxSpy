@@ -107,10 +107,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\RxSpy.Server\Events\EventType.cs">
+    <Compile Include="..\RxSpy\Events\EventType.cs">
       <Link>Models\Events\EventType.cs</Link>
     </Compile>
-    <Compile Include="..\RxSpy.Server\Events\Interfaces.cs">
+    <Compile Include="..\RxSpy\Events\Interfaces.cs">
       <Link>Models\Events\Interfaces.cs</Link>
     </Compile>
     <Compile Include="AppStartup\StartupSequence.cs" />
