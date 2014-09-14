@@ -8,7 +8,7 @@ using RxSpy.Events;
 
 namespace RxSpy.Communication
 {
-    public interface IRxSpyClient: IReactiveNotifyPropertyChanged
+    public interface IRxSpyClient
     {
         IObservable<IEvent> Connect(Uri address, TimeSpan timeout);
     }

@@ -115,7 +115,8 @@ namespace RxSpy.Models
 
             ObservedValues = new ReactiveList<RxSpyObservedValueModel>();
 
-            this.WhenAnyValue(x => x.Error, x => x == null ? false : true)
+            this.WhenAnyValue(x => x.Error)
+                .Select(x => x == null ? false : true)
                 .ToProperty(this, x => x.HasError, out _hasError);
 
             this.WhenAnyValue(x => x.Children.Count)

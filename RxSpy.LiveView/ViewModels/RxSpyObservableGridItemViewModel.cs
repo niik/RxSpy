@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ReactiveUI;
@@ -111,7 +112,8 @@ namespace RxSpy.ViewModels
             this.WhenAnyValue(x => x.Model.Descendants)
                 .ToProperty(this, x => x.Descendants, out _descendants);
 
-            this.WhenAnyValue(x => x.Model.CallSite, x => Convert.ToString(x))
+            this.WhenAnyValue(x => x.Model.CallSite)
+                .Select(x => Convert.ToString(x))
                 .ToProperty(this, x => x.CallSite, out _callSite);
 
             this.WhenAnyValue(x => x.Model.Status)

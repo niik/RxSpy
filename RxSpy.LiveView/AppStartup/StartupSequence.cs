@@ -13,6 +13,7 @@ using RxSpy.Models.Events;
 using RxSpy.ViewModels;
 using RxSpy.Views;
 using RxSpy.Views.Controls;
+using Splat;
 
 namespace RxSpy.AppStartup
 {
@@ -61,11 +62,11 @@ namespace RxSpy.AppStartup
 
             var mainViewModel = new MainViewModel(session);
 
-            RxApp.MutableResolver.RegisterConstant(mainViewModel, typeof(MainViewModel));
+            Locator.CurrentMutable.RegisterConstant(mainViewModel, typeof(MainViewModel));
 
-            RxApp.MutableResolver.Register(() => new MainView(), typeof(IViewFor<MainViewModel>));
-            RxApp.MutableResolver.Register(() => new TrackedObservablesGrid(), typeof(IViewFor<RxSpyObservablesGridViewModel>));
-            RxApp.MutableResolver.Register(() => new ObservableDetails(), typeof(IViewFor<RxSpyObservableDetailsViewModel>));
+            Locator.CurrentMutable.Register(() => new MainView(), typeof(IViewFor<MainViewModel>));
+            Locator.CurrentMutable.Register(() => new TrackedObservablesGrid(), typeof(IViewFor<RxSpyObservablesGridViewModel>));
+            Locator.CurrentMutable.Register(() => new ObservableDetails(), typeof(IViewFor<RxSpyObservableDetailsViewModel>));
         }
     }
 }
