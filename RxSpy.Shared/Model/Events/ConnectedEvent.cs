@@ -7,7 +7,7 @@ using RxSpy.Events;
 
 namespace RxSpy.Models.Events
 {
-    internal class ConnectedEvent: Event, IConnectedEvent
+    public class ConnectedEvent: Event, IConnectedEvent
     {
         public long OperatorId { get; set; }
     }
