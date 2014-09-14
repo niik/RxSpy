@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ReactiveUI;
 using RxSpy.ViewModels;
+using Splat;
 
 namespace RxSpy
 {
@@ -26,7 +27,7 @@ namespace RxSpy
         {
             InitializeComponent();
 
-            viewHost.ViewModel = RxApp.DependencyResolver.GetService<MainViewModel>();
+            viewHost.ViewModel = Locator.Current.GetService<MainViewModel>();
         }
 
         protected override void OnClosed(EventArgs e)
