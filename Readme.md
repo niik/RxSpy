@@ -6,12 +6,20 @@ RxSpy tries to solve or at least alleviate this problem by giving developers a l
 
 ![rxspy-screenshot](https://f.cloud.github.com/assets/634063/2190610/ae6c0508-982d-11e3-90b3-bbb3ffbc2317.png)
 
-RxSpy consists of two pieces. ```RxSpy.Server``` which is the small library you include in your app and the visual tool RxSpy. ```RxSpy.Server``` initiates a small server inside of your app which the visual tool can then connect to. Through that connection ```RxSpy.Server``` then streams all observable events that it can possibly get its hands on.
+RxSpy consists of two pieces. ```RxSpy``` which is the small library you include in your app and the visual tool RxSpy LiveView. ```RxSpy``` initiates a small server inside of your app which the visual tool can then connect to. Through that connection ```RxSpy.LiveView``` then streams all observable events that it can possibly get its hands on. You may also stream events to a file for analysis through some other tool. You do this by calling ```RxSpySession.Launch``` and passing in an instance of ```RxSpyStreamWriter```.
+
+## WARNING WARNING BETA BETA
+
+RxSpy is extremely young still. While the LiveView tool is suitable for demos, teaching etc it struggles to handle any real world application load. The reason is twofold, it's not been optimized yet and it's also really hard/impossible to take all events from multiple threads and try to serialize them onto the UI thread of the live view app in real time.
+
+If you have a rought idea of what areas of your app you'd want to monitor you can use [explicit capture](https://github.com/niik/RxSpy/pull/24) to only look at a specific set of observables.
+
+The long term plan is to build a companion app to the Live View tool that does non-realtime analysis of a captured file.
 
 ## Running it
 
- - Include ```RxSpy.Server``` in your app and call ```RxSpySession.Launch``` at the entry point of your application. This call will block until the UI has had a chance to launch and connect.
- - If you're not running it through the solution you'll have to edit the ```RxSpySession.FindGuiPath``` and point it to the ```RxSpy.exe```. It's on my list
+ - Include ```RxSpy``` in your app and call ```RxSpySession.Launch``` at the entry point of your application. This call will block until the UI has had a chance to launch and connect.
+ - If you're not running it through the solution you'll have to edit the ```RxSpySession.FindGuiPath``` and point it to the ```RxSpy.LiveView.exe```. It's on my list
 
 ## Things currently trackable
 
