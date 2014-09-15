@@ -133,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
+    <Folder Include="Views\Controls\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RxSpy.Shared\RxSpy.Shared.csproj">
