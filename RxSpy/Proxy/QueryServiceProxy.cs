@@ -45,10 +45,8 @@ namespace RxSpy.Proxy
             if (call == null)
                 throw new ArgumentException("QueryLanguageProxy only supports call messages");
 
-            if (RxSpyGroup.IsActive)
-            {
+            if (!RxSpySession.Current.IsCapturing)
                 return ForwardCall(call);
-            }
 
             var method = (System.Reflection.MethodInfo)call.MethodBase;
 
