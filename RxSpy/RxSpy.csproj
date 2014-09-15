@@ -92,7 +92,6 @@
     <Compile Include="Utils\MethodInvoker.cs" />
     <Compile Include="Utils\Monotonic.cs" />
     <Compile Include="Utils\OperatorFactory.cs" />
-    <Compile Include="Utils\RxSpyGroup.cs" />
     <Compile Include="Utils\TypeUtils.cs" />
     <Compile Include="Utils\ValueFormatter.cs" />
   </ItemGroup>
