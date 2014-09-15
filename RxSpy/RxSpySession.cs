@@ -28,7 +28,7 @@ namespace RxSpy
 
         public static RxSpySession Launch(string pathToRxSpy = null)
         {
-            return Launch(TimeSpan.FromHours(5), pathToRxSpy);
+            return Launch(TimeSpan.FromSeconds(10), pathToRxSpy);
         }
 
         public static RxSpySession Launch(TimeSpan timeout, string pathToRxSpy = null)
