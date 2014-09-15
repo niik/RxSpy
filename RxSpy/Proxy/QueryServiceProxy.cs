@@ -28,14 +28,16 @@ namespace RxSpy.Proxy
         readonly Type _queryLanguageType;
         readonly Type _queryLanguageInterface;
         readonly RxSpySession _session;
+        readonly bool _explicitCapture;
 
-        internal QueryLanguageProxy(RxSpySession session, object realQueryLanguage)
+        internal QueryLanguageProxy(RxSpySession session, object realQueryLanguage, bool explicitCapture)
             : base(typeof(ContextBoundObject))
         {
             _queryLanguage = realQueryLanguage;
             _queryLanguageType = realQueryLanguage.GetType();
             _queryLanguageInterface = _queryLanguageType.GetInterface("IQueryLanguage");
             _session = session;
+            _explicitCapture = explicitCapture;
         }
 
         public override IMessage Invoke(IMessage msg)

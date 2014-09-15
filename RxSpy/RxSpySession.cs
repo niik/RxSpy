@@ -26,12 +26,12 @@ namespace RxSpy
             _eventHandler = eventHandler;
         }
 
-        public static RxSpySession Launch(string pathToRxSpy = null)
+        public static RxSpySession Launch(string pathToRxSpy = null, bool explicitCapture = false)
         {
-            return Launch(TimeSpan.FromSeconds(10), pathToRxSpy);
+            return Launch(TimeSpan.FromSeconds(10), pathToRxSpy, explicitCapture);
         }
 
-        public static RxSpySession Launch(TimeSpan timeout, string pathToRxSpy = null)
+        public static RxSpySession Launch(TimeSpan timeout, string pathToRxSpy = null, bool explicitCapture = false)
         {
             if (_launched == 1)
                 throw new InvalidOperationException("Session already created");
@@ -54,7 +54,7 @@ namespace RxSpy
             return Launch(server);
         }
 
-        public static RxSpySession Launch(IRxSpyEventHandler eventHandler)
+        public static RxSpySession Launch(IRxSpyEventHandler eventHandler, bool explicitCapture = false)
         {
             var session = new RxSpySession(eventHandler);
             Current = session;
@@ -62,7 +62,7 @@ namespace RxSpy
             if (Interlocked.CompareExchange(ref _launched, 1, 0) != 0)
                 throw new InvalidOperationException("Session already created");
 
-            InstallInterceptingQueryLanguage(session);
+            InstallInterceptingQueryLanguage(session, explicitCapture);
 
             return session;
         }
@@ -110,7 +110,7 @@ namespace RxSpy
             throw new ArgumentException("Can't find RxSpy.LiveView.exe - either copy it and its DLLs to your output directory or pass in a path to Create");
         }
 
-        static void InstallInterceptingQueryLanguage(RxSpySession session)
+        static void InstallInterceptingQueryLanguage(RxSpySession session, bool explictCapture)
         {
             // TODO: Verify that the version is supported
             var rxLinqAssembly = Assembly.Load(new AssemblyName("System.Reactive.Linq"));
@@ -123,7 +123,7 @@ namespace RxSpy
 
             var actualImplementation = defaultImplementationField.GetValue(null);
 
-            object proxy = new QueryLanguageProxy(session, actualImplementation)
+            object proxy = new QueryLanguageProxy(session, actualImplementation, explictCapture)
                 .GetTransparentProxy();
 
             defaultImplementationField.SetValue(null, proxy);
