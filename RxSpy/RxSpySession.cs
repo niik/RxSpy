@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
@@ -18,12 +19,25 @@ namespace RxSpy
     {
         static int _launched = 0;
         readonly IRxSpyEventHandler _eventHandler;
+        readonly bool _explicitCapture;
+
+        [ThreadStatic]
+        bool _isInCaptureScope;
+
+        public bool IsCapturing
+        {
+            get
+            {
+                return _explicitCapture == false || _isInCaptureScope == true;
+            }
+        }
 
         internal static RxSpySession Current { get; private set; }
 
-        RxSpySession(IRxSpyEventHandler eventHandler)
+        RxSpySession(IRxSpyEventHandler eventHandler, bool explicitCapture)
         {
             _eventHandler = eventHandler;
+            _explicitCapture = explicitCapture;
         }
 
         public static RxSpySession Launch(string pathToRxSpy = null, bool explicitCapture = false)
@@ -51,18 +65,18 @@ namespace RxSpy
             Process.Start(psi);
             server.WaitForConnection(timeout);
 
-            return Launch(server);
+            return Launch(server, explicitCapture);
         }
 
         public static RxSpySession Launch(IRxSpyEventHandler eventHandler, bool explicitCapture = false)
         {
-            var session = new RxSpySession(eventHandler);
+            var session = new RxSpySession(eventHandler, explicitCapture);
             Current = session;
 
             if (Interlocked.CompareExchange(ref _launched, 1, 0) != 0)
                 throw new InvalidOperationException("Session already created");
 
-            InstallInterceptingQueryLanguage(session, explicitCapture);
+            InstallInterceptingQueryLanguage(session);
 
             return session;
         }
@@ -110,7 +124,7 @@ namespace RxSpy
             throw new ArgumentException("Can't find RxSpy.LiveView.exe - either copy it and its DLLs to your output directory or pass in a path to Create");
         }
 
-        static void InstallInterceptingQueryLanguage(RxSpySession session, bool explictCapture)
+        static void InstallInterceptingQueryLanguage(RxSpySession session)
         {
             // TODO: Verify that the version is supported
             var rxLinqAssembly = Assembly.Load(new AssemblyName("System.Reactive.Linq"));
@@ -123,10 +137,26 @@ namespace RxSpy
 
             var actualImplementation = defaultImplementationField.GetValue(null);
 
-            object proxy = new QueryLanguageProxy(session, actualImplementation, explictCapture)
+            object proxy = new QueryLanguageProxy(session, actualImplementation)
                 .GetTransparentProxy();
 
             defaultImplementationField.SetValue(null, proxy);
+        }
+
+        public static IDisposable Capture()
+        {
+            Current.StartCapture();
+            return Disposable.Create(() => Current.StopCapture());
+        }
+
+        public void StartCapture()
+        {
+            _isInCaptureScope = true;
+        }
+
+        public void StopCapture()
+        {
+            _isInCaptureScope = false;
         }
 
         public void OnCreated(IOperatorCreatedEvent onCreatedEvent)
