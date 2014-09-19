@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-    <id>RxSpy</id>
+    <id>RxSpy.LiveView</id>
+    <title>RxSpy with LiveView</title>
     <version>0.1.5</version>
-    <description>A library that provides logging/analysis of Reactive Extensions observables, events, errors and subscriptions in your application.</description>
+    <description>RxSpy bundled with a graphical interfaces for inspecting reactive applications. The LiveView interface will not be shipped alongside your application.</description>
     <authors>Markus Olsson</authors>
     <projectUrl>https://github.com/niik/RxSpy</projectUrl>
     <licenseUrl>https://github.com/niik/RxSpy/blob/master/LICENSE</licenseUrl>
@@ -18,5 +19,7 @@
 
   <files>
     <file src="RxSpy\bin\Release\RxSpy.dll" target="lib\net45" />
+    <file src="RxSpy.LiveView\bin\Release\RxSpy.LiveView.exe" target="tools" />
+    <file src="RxSpy.LiveView\bin\Release\*.dll" target="tools" />
   </files>
 </package>
