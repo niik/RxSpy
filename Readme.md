@@ -18,8 +18,11 @@ The long term plan is to build a companion app to the Live View tool that does n
 
 ## Running it
 
- - Include ```RxSpy``` in your app and call ```RxSpySession.Launch``` at the entry point of your application. This call will block until the UI has had a chance to launch and connect.
- - If you're not running it through the solution you'll have to edit the ```RxSpySession.FindGuiPath``` and point it to the ```RxSpy.LiveView.exe```. It's on my list
+The easiest way to start playing with RxSpy is to install the NuGet package RxSpy.LiveView into your app. Once you've done that or included RxSpy through other means call ```RxSpySession.Launch``` at the entry point of your application. This call will block until the UI has had a chance to launch and connect.
+
+If you're not running it through nuget package you'll have to edit the ```RxSpySession.FindGuiPath``` and point it to the ```RxSpy.LiveView.exe```.
+
+You can also clone RxSpy and try the RxSpy.TestConsole project.
 
 ## Things currently trackable
 
