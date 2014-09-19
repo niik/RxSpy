@@ -213,3 +213,6 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# Nuget packages, don't need these cluttering my view
+*.nupkg
