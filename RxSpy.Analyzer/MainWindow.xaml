@@ -1,0 +1,11 @@
+﻿<Window x:Class="RxSpy.Analyzer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:rx="clr-namespace:ReactiveUI;assembly=ReactiveUI"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="500" Width="800">
+    <rx:ViewModelViewHost 
+            x:Name="viewHost" 
+            HorizontalContentAlignment="Stretch" 
+            VerticalContentAlignment="Stretch" 
+        />
+</Window>
