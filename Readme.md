@@ -2,7 +2,7 @@
 
 Debugging Reactive applications can be hard™. Chaining and joining observables right and left often produce an observable graph that can be hard to comprehend.
 
-RxSpy tries to solve or at least alleviate this problem by giving developers a live birds-eye view of the applications, all observables within it and the signals they produce. By referencing a small library your app you can launch a reactive debugging session of sorts which gives you a visual interface through which you can see all observables in your app, the values they produced and where they where created from.    
+RxSpy tries to solve or at least alleviate this problem by giving developers a live birds-eye view of the application, all observables within it and the signals they produce. By referencing a small library your app you can launch a reactive debugging session of sorts which gives you a visual interface through which you can see all observables in your app, the values they produced and where they where created from.    
 
 ![rxspy-screenshot](https://cloud.githubusercontent.com/assets/634063/4343107/e3261bb6-404e-11e4-986f-adf6475db8d7.gif)
 
@@ -15,7 +15,7 @@ RxSpy is extremely young still. While the LiveView tool is suitable for demos, t
 
 If you have a rought idea of what areas of your app you'd want to monitor you can use [explicit capture](https://github.com/niik/RxSpy/pull/24) to only look at a specific set of observables.
 
-The long term plan is to build a companion app to the Live View tool that does non-realtime analysis of a captured file.
+The long term plan is to build a companion app to the Live View tool that does non-realtime analysis of a captured file. See [#25](https://github.com/niik/RxSpy/pull/25) for more info on that.
 
 ## Running it
 
