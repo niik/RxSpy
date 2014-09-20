@@ -16,6 +16,37 @@ using System.Reactive.Linq;
 
 namespace RxSpy.Proxy
 {
+    // This is the core part of RxSpy. All static extension methods on System.Reactive.Observable
+    // pass through a private member of the Observable class that implements the private interface
+    // IQueryLanguage[1]. While we use private reflection to both locate and set the field it's
+    // impossible to create an implementation of the IQueryLanguage without being a friend
+    // assembly to System.Reactive.Linq. We can get the interface itself, we can use IL-emit
+    // to create a class that matches the interface but it's not possible (as far as I know)
+    // to fool the framework into accepting that the generated class actually implements the 
+    // private interface.
+    //
+    // So, we can't implement it. But we _can_ pretend we did. Our savior hides deep withing the
+    // ancient and darkest parts of .NET. It's called RealProxy[2] and it's part of the old .NET 
+    // remoting API.
+    //
+    // A RealProxy is an object that the framework gives special treatment. If you take a RealProxy
+    // instance and cast it to say System.Uri the runtime will call the CanCastTo method of the proxy
+    // essentially asking it "hey, can you pretend to be a System.Uri instance?". If the proxy says
+    // 'hell yeah' the cast will succeed and all operations on that object will be marshalled
+    // through the Invoke method on the proxy. Pretty cool, ey? I lke this part of the documentation:
+    //
+    //   "The transparent proxy provides the illusion that the actual 
+    //    object resides in the client's space."
+    //
+    // It's as close to magic as we get with .NET.
+    //
+    // Anyway, using this we can say 'hell yeah, I'm an IQueryLanguage instance', swap out the
+    // private field to our proxy and thereby receive _every_ Rx operator call from that point
+    // forward. Every .Select, .Where .ObserveOn et etc. After that we can hijack the observables
+    // from the actual implementation and replace them with our own reporting observables.
+    //
+    // 1. https://github.com/Reactive-Extensions/Rx.NET/blob/v2.2.5/Rx.NET/Source/System.Reactive.Linq/Reactive/Linq/Observable_.cs#L10
+    // 2. http://msdn.microsoft.com/en-us/library/system.runtime.remoting.proxies.realproxy(v=vs.110).aspx
     internal class QueryLanguageProxy : RealProxy, IRemotingTypeInfo
     {
         readonly static ConcurrentDictionary<System.Reflection.MethodInfo, Lazy<Func<IMethodCallMessage, IMethodReturnMessage>>> _methodHandlerCache =
