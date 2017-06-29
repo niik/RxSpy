@@ -1,8 +1,8 @@
 # RxSpy
 
-Debugging Reactive applications can be hard™. Chaining and joining observables right and left often produce an observable graph that can be hard to comprehend.
+Debugging Reactive applications is super easy. Chaining and joining observables right and left often produce an observable graph that can be hard to comprehend.
 
-RxSpy tries to solve or at least alleviate this problem by giving developers a live birds-eye view of the application, all observables within it and the signals they produce. By referencing a small library your app you can launch a reactive debugging session of sorts which gives you a visual interface through which you can see all observables in your app, the values they produced and where they where created from.    
+RxSpy tries to solve or at least alleviate this problem by giving developers a live birds-eye view of the application, all observables within it and the signals they produce. By referencing a small library your app you can launch a reactive debugging session of sorts which gives you a visual interface through which you can see all observables in your app, the values they produced and where they where created from.
 
 ![rxspy-screenshot](https://cloud.githubusercontent.com/assets/634063/4343107/e3261bb6-404e-11e4-986f-adf6475db8d7.gif)
 
@@ -28,7 +28,7 @@ You can also clone RxSpy and try the RxSpy.TestConsole project.
 ## Things currently trackable
 
  - All observables created through one of the standard Rx operators.
-   - The class and method from which the operator was created and (if available) the file name and line.   
+   - The class and method from which the operator was created and (if available) the file name and line.
  - Signals (values) produced by observables
    - The timestamp of when the signal was produced
    - A string representation of the value itself (using ```DebuggerDisplay``` if available, falls back to ```.ToString()```)
@@ -40,5 +40,5 @@ You can also clone RxSpy and try the RxSpy.TestConsole project.
 
 ## Nifty things
 
- - By double-clicking on an observable in the app you get a visual graph rendering of that observable, all of its ancestors and descendants. The graph is live-updating and 
+ - By double-clicking on an observable in the app you get a visual graph rendering of that observable, all of its ancestors and descendants. The graph is live-updating and
  - If you tack on ```.SpyTag("Foo")``` to one of the observables in your app that tag will show in the UI. Making it easy to locate the observable in the app.
