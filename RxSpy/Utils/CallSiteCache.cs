@@ -39,21 +39,14 @@ namespace RxSpy.Utils
             var mscorlib = typeof(object).Assembly;
 
             var sfhType = mscorlib.GetType("System.Diagnostics.StackFrameHelper");
-            var sfhCtor = sfhType.GetConstructor(new Type[] { typeof(bool), typeof(Thread) });
+            var sfhCtor = sfhType.GetConstructor(new[] { typeof(Thread) });
             var sfhRgMethodHandle = sfhType.GetField("rgMethodHandle", bcl.BindingFlags.NonPublic | bcl.BindingFlags.Instance);
             var sfhRgiILOffsetField = sfhType.GetField("rgiILOffset", bcl.BindingFlags.NonPublic | bcl.BindingFlags.Instance);
-
-            var sfhGetMethodBaseMethod = sfhType.GetMethod("GetMethodBase",
-                bcl.BindingFlags.Instance | bcl.BindingFlags.Public);
 
             var getStackFramesInternalMethod = typeof(StackTrace).GetMethod("GetStackFramesInternal",
                 bcl.BindingFlags.Static | bcl.BindingFlags.NonPublic);
 
-            var calculateFramesToSkipMethod = typeof(StackTrace).GetMethod("CalculateFramesToSkip",
-                bcl.BindingFlags.Static | bcl.BindingFlags.NonPublic);
-
-            var currentThreadProperty = typeof(Thread).GetProperty("CurrentThread");
-            var tupleCtor = typeof(Tuple<IntPtr, int>).GetConstructor(new Type[] { typeof(IntPtr), typeof(int) });
+            var tupleCtor = typeof(Tuple<IntPtr, int>).GetConstructor(new[] { typeof(IntPtr), typeof(int) });
 
             var skipParam = Expression.Parameter(typeof(int), "iSkip");
             var sfhVariable = Expression.Variable(sfhType, "sfh");
@@ -68,12 +61,16 @@ namespace RxSpy.Utils
                     Expression.Assign(
                         sfhVariable,
                         Expression.New(sfhCtor,
-                            Expression.Constant(false, typeof(bool)), // fNeedFileLineColInfo
                             Expression.Constant(null, typeof(Thread)) // target (thread)
                         )
                     ),
 
-                    Expression.Call(getStackFramesInternalMethod, sfhVariable, zero, Expression.Constant(null, typeof(Exception))),
+                    Expression.Call(
+                        getStackFramesInternalMethod,
+                        sfhVariable,
+                        zero,
+                        Expression.Constant(false, typeof(bool)),
+                        Expression.Constant(null, typeof(Exception))),
 
                     Expression.New(tupleCtor,
                         Expression.ArrayIndex(Expression.Field(sfhVariable, sfhRgMethodHandle), skipParam),
