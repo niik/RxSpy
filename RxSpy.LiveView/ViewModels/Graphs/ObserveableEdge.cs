@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QuickGraph;
+using QuikGraph;
 using RxSpy.Models;
 
 namespace RxSpy.ViewModels.Graphs
