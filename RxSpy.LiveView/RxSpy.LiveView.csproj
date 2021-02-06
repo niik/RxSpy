@@ -48,7 +48,7 @@
     </Reference>
     <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="QuikGraph">
-      <HintPath>..\packages\QuikGraph.2.2.0\lib\net45\QuikGraph.dll</HintPath>
+      <HintPath>..\packages\QuikGraph.2.3.0\lib\net45\QuikGraph.dll</HintPath>
     </Reference>
     <Reference Include="ReactiveUI, Version=6.0.6.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
